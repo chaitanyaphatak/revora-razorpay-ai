@@ -169,6 +169,15 @@ describe("Voice Recovery Channel Engine & Store", () => {
     const turn3 = await processGeminiVoiceTurn(session2, "payment mode open karo");
     expect(turn3.action).toBe("OPEN_PAYMENT_GATEWAY");
     expect(turn3.openGateway).toBe(true);
+
+    // Turn 4 test: Devanagari Hindi transcript output from Chrome Web Speech (hi-IN)
+    const turn4 = await processGeminiVoiceTurn(session2, "पेमेंट पेज ओपन करो");
+    expect(turn4.action).toBe("OPEN_PAYMENT_GATEWAY");
+    expect(turn4.openGateway).toBe(true);
+
+    const turn5 = await processGeminiVoiceTurn(session, "हाँ खोलो");
+    expect(turn5.action).toBe("OPEN_PAYMENT_GATEWAY");
+    expect(turn5.openGateway).toBe(true);
   });
 });
 

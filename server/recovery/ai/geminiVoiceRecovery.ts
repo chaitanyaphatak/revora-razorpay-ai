@@ -129,15 +129,41 @@ export async function processGeminiVoiceTurn(
 
   // Fallback intelligent heuristic in case API key is absent or offline
   const generateFallbackResponse = (): VoiceTurnResponse => {
-    const input = userInput.toLowerCase().trim();
+    const rawInput = userInput.trim();
+    const input = rawInput.toLowerCase();
 
-    // 1. Direct or contextual payment opening intent
+    // 1. Customer asking WHY payment failed (check this first so 'payment fail kyu hua' is explained)
+    const isAskingFailureReason =
+      input.includes("kyun") || input.includes("kyu") || input.includes("why") ||
+      input.includes("failed") || input.includes("fail") || input.includes("kya hua") ||
+      input.includes("reason") || input.includes("wajah") || input.includes("problem") || input.includes("issue") ||
+      rawInput.includes("क्यों") || rawInput.includes("क्यो") || rawInput.includes("फेल") ||
+      rawInput.includes("क्या हुआ") || rawInput.includes("कारण") || rawInput.includes("वजह") || rawInput.includes("दिक्कत");
+
+    if (isAskingFailureReason) {
+      return {
+        replyText: `${session.customerName} ji, ${failureExp}. Aapka koi paisa account se nahi gaya. Kya main payment page abhi open karun?`,
+        intent: "ASK_FAILURE_REASON",
+        action: "OFFER_PAYMENT",
+        actionPayload: { suggestedPaymentMethod: "card_or_upi" },
+      };
+    }
+
+    // 2. Direct or contextual payment opening intent (Bilingual: Roman Hinglish + Devanagari Hindi)
     const isPaymentAffirmative =
-      input === "ha" || input === "haan" || input === "yes" || input === "theek hai" ||
-      input === "ok" || input === "okay" || input === "sure" || input === "karo" ||
-      input === "kardo" || input === "kar do" || input === "chalo" || input === "sahi hai";
+      // Roman affirmations
+      input === "ha" || input === "haan" || input === "haa" || input === "han" ||
+      input === "yes" || input === "theek hai" || input === "thik hai" || input === "ok" ||
+      input === "okay" || input === "sure" || input === "karo" || input === "kardo" ||
+      input === "kar do" || input === "chalo" || input === "sahi hai" || input === "bhejo" ||
+      input === "open" || input === "kholo" || input === "khol do" ||
+      // Devanagari affirmations (from Chrome hi-IN speech recognition)
+      rawInput.includes("हाँ") || rawInput.includes("हां") || rawInput.includes("हा") ||
+      rawInput.includes("ठीक है") || rawInput.includes("चलो") || rawInput.includes("ओके") ||
+      rawInput.includes("करो") || rawInput.includes("कर दो") || rawInput.includes("भेजो");
 
     const hasPaymentOpenKeywords =
+      // Roman keywords
       input.includes("open") || input.includes("kholo") || input.includes("khol") ||
       input.includes("khol do") || input.includes("kardo") || input.includes("kar do") ||
       input.includes("payment page") || input.includes("payment mode") || input.includes("payment screen") ||
@@ -146,7 +172,15 @@ export async function processGeminiVoiceTurn(
       input.includes("gateway") || input.includes("link bhejo") || input.includes("link do") ||
       input.includes("link send") || input.includes("pay karna") || input.includes("pay karta") ||
       input.includes("pay karunga") || input.includes("abhi pay") || input.includes("wapas try") ||
-      input.includes("retry") || input.includes("dobara") || input.includes("razorpay");
+      input.includes("try karo") || input.includes("try karna") ||
+      input.includes("retry") || input.includes("dobara") || input.includes("phir se") ||
+      input.includes("razorpay") || input.includes("upi se") || input.includes("card se") ||
+      // Devanagari keywords (from Web Speech hi-IN)
+      rawInput.includes("पेमेंट पेज") || rawInput.includes("पेज ओपन") || rawInput.includes("ओपन करो") ||
+      rawInput.includes("खोलो") || rawInput.includes("खोल दो") || rawInput.includes("लिंक भेजो") ||
+      rawInput.includes("गेटवे") || rawInput.includes("चेकआउट") || rawInput.includes("ट्राई") ||
+      rawInput.includes("दोबारा") || rawInput.includes("पे करना") || rawInput.includes("पे करू") ||
+      rawInput.includes("पे करूँगा") || rawInput.includes("रेज़रपे");
 
     if ((hadOfferedPayment && isPaymentAffirmative) || hasPaymentOpenKeywords) {
       return {
@@ -158,22 +192,11 @@ export async function processGeminiVoiceTurn(
       };
     }
 
-    // 2. Customer asking WHY payment failed
-    if (
-      input.includes("kyun") || input.includes("kyu") || input.includes("why") ||
-      input.includes("failed") || input.includes("fail") || input.includes("kya hua") ||
-      input.includes("reason") || input.includes("wajah") || input.includes("problem") || input.includes("issue")
-    ) {
-      return {
-        replyText: `${session.customerName} ji, ${failureExp}. Aapka koi paisa account se nahi gaya. Kya main payment page abhi open karun?`,
-        intent: "ASK_FAILURE_REASON",
-        action: "OFFER_PAYMENT",
-        actionPayload: { suggestedPaymentMethod: "card_or_upi" },
-      };
-    }
-
     // 3. Specific payment method issue
-    if (input.includes("upi") || input.includes("server") || input.includes("timeout") || input.includes("paise cut")) {
+    if (
+      input.includes("upi") || input.includes("server") || input.includes("timeout") || input.includes("paise cut") ||
+      rawInput.includes("यूपीआई") || rawInput.includes("सर्वर") || rawInput.includes("पैसे")
+    ) {
       return {
         replyText: `Samajh gaya! ${failureExp}. Aap bina kisi dikkat ke Card ya Netbanking se safely complete kar sakte hain — kya main payment screen abhi open karun?`,
         intent: "PAYMENT_METHOD_PROBLEM",
@@ -186,7 +209,8 @@ export async function processGeminiVoiceTurn(
     if (
       input.includes("kal") || input.includes("baad me") || input.includes("later") ||
       input.includes("salary") || input.includes("date") || input.includes("tarikh") ||
-      input.includes("tarik") || input.includes("week") || input.includes("mahine")
+      input.includes("tarik") || input.includes("week") || input.includes("mahine") ||
+      rawInput.includes("कल") || rawInput.includes("बाद में") || rawInput.includes("सैलरी") || rawInput.includes("तारीख")
     ) {
       return {
         replyText: `Koi baat nahi ${session.customerName} ji! Humne aapka Promise-to-Pay note kar liya hai. Hum tab tak automated reminders pause kar rahe hain. Dhanyawaad!`,
@@ -199,7 +223,8 @@ export async function processGeminiVoiceTurn(
     // 5. Customer declining
     if (
       input.includes("nahi") || input.includes("cancel") || input.includes("stop") ||
-      input.includes("don't") || input.includes("mat") || input.includes("nahi karna")
+      input.includes("don't") || input.includes("mat") || input.includes("nahi karna") ||
+      rawInput.includes("नहीं") || rawInput.includes("ना") || rawInput.includes("कैंसिल") || rawInput.includes("मत")
     ) {
       return {
         replyText: `Ji theek hai, aapki request ke mutabiq humne recovery process yahin stop kar diya hai. Aapko aage koi reminder nahi aayega. Dhanyawaad!`,
@@ -212,7 +237,8 @@ export async function processGeminiVoiceTurn(
     // 6. Human escalation
     if (
       input.includes("human") || input.includes("agent") || input.includes("support") ||
-      input.includes("executive") || input.includes("baat karao") || input.includes("insaan")
+      input.includes("executive") || input.includes("baat karao") || input.includes("insaan") ||
+      rawInput.includes("एजेंट") || rawInput.includes("सपोर्ट") || rawInput.includes("इंसान") || rawInput.includes("बात कराओ")
     ) {
       return {
         replyText: `Zaroor! Main aapka case hamari support team ke executive ko escalate kar raha hoon. Wo jald hi aapse contact karenge.`,
@@ -260,34 +286,46 @@ CRITICAL CONVERSATIONAL RULES:
 
 STYLE GUIDELINES:
 - Speak warm, natural Hinglish (Roman script).
-- Maximum 1 to 2 sentences per reply (this is spoken aloud).
 - NEVER ask for OTP, PIN, password, or CVV.
 - Return ONLY valid JSON matching the schema.`;
 
   // Format valid alternating Gemini message contents
+  const rawHistory = session.transcript.filter((t) => t.role === "user" || t.role === "assistant");
+  
+  // If the last entry in rawHistory is already this userInput, exclude it so we don't send duplicate user turns
+  const previousTurns = (rawHistory.length > 0 && rawHistory[rawHistory.length - 1].role === "user" && rawHistory[rawHistory.length - 1].text === userInput)
+    ? rawHistory.slice(0, -1)
+    : rawHistory;
+
   const contents: Array<{ role: "user" | "model"; parts: Array<{ text: string }> }> = [];
 
-  // Filter non-system messages from history (up to last 6)
-  const history = session.transcript.filter((t) => t.role === "user" || t.role === "assistant").slice(-6);
+  for (const turn of previousTurns.slice(-6)) {
+    const role = turn.role === "assistant" ? "model" : "user";
+    if (contents.length > 0 && contents[contents.length - 1].role === role) {
+      contents[contents.length - 1].parts[0].text += " " + turn.text;
+    } else {
+      contents.push({ role, parts: [{ text: turn.text }] });
+    }
+  }
 
-  for (const turn of history) {
-    contents.push({
-      role: turn.role === "assistant" ? "model" : "user",
-      parts: [{ text: turn.text }],
+  // Ensure first turn in contents is always "user" (Gemini requirement)
+  if (contents.length === 0 || contents[0].role !== "user") {
+    contents.unshift({
+      role: "user",
+      parts: [{ text: "Namaste, main " + session.customerName + " hoon." }],
     });
   }
 
-  // Add the current incoming user turn
-  contents.push({
-    role: "user",
-    parts: [{ text: userInput }],
-  });
-
-  // Ensure first turn in contents is always "user" (Gemini requirement)
-  if (contents.length > 0 && contents[0].role !== "user") {
-    contents.unshift({
+  // Now append the single current user turn
+  if (contents[contents.length - 1].role === "user") {
+    contents[contents.length - 1] = {
       role: "user",
-      parts: [{ text: `Namaste, main ${session.customerName} hoon.` }],
+      parts: [{ text: userInput }],
+    };
+  } else {
+    contents.push({
+      role: "user",
+      parts: [{ text: userInput }],
     });
   }
 
@@ -312,7 +350,7 @@ STYLE GUIDELINES:
     );
 
     if (!response.ok) {
-      console.warn(`[GeminiVoice] API responded with ${response.status}. Using fallback response.`);
+      console.warn("[GeminiVoice] API responded with " + response.status + ". Using fallback response.");
       return generateFallbackResponse();
     }
 
@@ -324,7 +362,34 @@ STYLE GUIDELINES:
         .join("") ?? "";
 
     const parsed = JSON.parse(content) as VoiceTurnResponse;
-    if (parsed.action === "OPEN_PAYMENT_GATEWAY") {
+    const lowerReply = (parsed.replyText || "").toLowerCase();
+    const rawInput = userInput.trim();
+    const lowerInput = rawInput.toLowerCase();
+
+    const isAskingFailure =
+      lowerInput.includes("kyun") || lowerInput.includes("kyu") || lowerInput.includes("why") ||
+      lowerInput.includes("failed") || lowerInput.includes("fail") || lowerInput.includes("kya hua") ||
+      lowerInput.includes("reason") || lowerInput.includes("wajah") ||
+      rawInput.includes("क्यों") || rawInput.includes("क्यो") || rawInput.includes("फेल") || rawInput.includes("कारण");
+
+    const isPayIntent =
+      !isAskingFailure && (
+        parsed.action === "OPEN_PAYMENT_GATEWAY" ||
+        lowerInput.includes("open") || lowerInput.includes("kholo") || lowerInput.includes("khol") ||
+        lowerInput.includes("payment page") || lowerInput.includes("payment mode") ||
+        lowerInput.includes("payment link") || lowerInput.includes("pay karna") || lowerInput.includes("abhi pay") ||
+        lowerInput.includes("gateway") || lowerInput.includes("checkout") ||
+        rawInput.includes("पेमेंट पेज") || rawInput.includes("ओपन करो") || rawInput.includes("खोलो") ||
+        rawInput.includes("गेटवे") || rawInput.includes("लिंक भेजो") ||
+        (hadOfferedPayment && (
+          lowerInput === "ha" || lowerInput === "haan" || lowerInput === "yes" || lowerInput === "ok" ||
+          lowerInput === "karo" || lowerInput === "theek hai" || rawInput.includes("हाँ") || rawInput.includes("हां") || rawInput.includes("हा")
+        )) ||
+        lowerReply.includes("payment page open") || lowerReply.includes("gateway open") || lowerReply.includes("khol raha hoon")
+      );
+
+    if (isPayIntent) {
+      parsed.action = "OPEN_PAYMENT_GATEWAY";
       parsed.openGateway = true;
     }
     return parsed;

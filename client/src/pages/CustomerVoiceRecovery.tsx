@@ -78,6 +78,13 @@ export default function CustomerVoiceRecovery() {
 
   const speechControllerRef = useRef<BrowserSpeechController | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  // Keep a live ref to sessionData so async handlers always have fresh data
+  const sessionDataRef = useRef(sessionData);
+
+  // Keep sessionDataRef in sync with latest sessionData
+  useEffect(() => {
+    sessionDataRef.current = sessionData;
+  }, [sessionData]);
 
   // Preload Razorpay Checkout SDK
   useEffect(() => {
@@ -132,48 +139,67 @@ export default function CustomerVoiceRecovery() {
     onSuccess: async (data) => {
       setInterimSpeech("");
       const reply = data.turnResult.replyText;
-      const action = data.turnResult.action;
+      const turnAction = (data.turnResult as any).action as string | undefined;
+      const isGatewayAction = turnAction === "OPEN_PAYMENT_GATEWAY" || (data.turnResult as any).openGateway === true;
 
-      // Speak back assistant message if not muted and voice supported
-      if (!isMuted && !useTextMode) {
+      // Log for debugging
+      console.log("[Voice] turnAction:", turnAction, "isGatewayAction:", isGatewayAction, "openGateway:", (data.turnResult as any).openGateway);
+
+      // Toast notifications
+      if (turnAction === "COLLECT_PROMISE_DATE") {
+        toast.info("Promise-to-Pay recorded", { description: "Automated reminders are paused until your chosen date." });
+      } else if (turnAction === "STOP_RECOVERY") {
+        toast.info("Recovery stopped", { description: "You will not receive any further automated reminders." });
+      }
+
+      // CRITICAL: If gateway action — open Razorpay IMMEDIATELY, don't wait for TTS
+      if (isGatewayAction) {
+        setVoiceState("payment_ready");
+        // Speak confirmation in background (don't await — let Razorpay open at same time)
+        if (!isMuted && !useTextMode && speechControllerRef.current) {
+          speechControllerRef.current.speak(reply);
+        }
+        // Open Razorpay right away — this is the key fix
+        void handleOpenRazorpayCheckoutFromRef();
+        return; // early return — nothing else to do
+      }
+
+      // For non-gateway actions: speak reply, then decide next state
+      if (!isMuted && !useTextMode && speechControllerRef.current) {
         setVoiceState("speaking");
-        await speechControllerRef.current?.speak(
+        await speechControllerRef.current.speak(
           reply,
           () => setVoiceState("speaking"),
-          async () => {
-            if (action === "OPEN_PAYMENT_GATEWAY") {
-              setVoiceState("payment_ready");
-              // Auto-open Razorpay after speech finishes
-              await handleOpenRazorpayCheckout();
-            } else if (action === "OFFER_PAYMENT") {
-              setVoiceState("payment_ready");
-            } else if (action === "STOP_RECOVERY") {
+          () => {
+            // After TTS finishes
+            if (turnAction === "STOP_RECOVERY" || turnAction === "ESCALATE_HUMAN") {
               setVoiceState("completed");
+            } else if (turnAction === "OFFER_PAYMENT") {
+              setVoiceState("payment_ready");
+              // Auto restart mic so customer can immediately respond
+              setTimeout(() => {
+                setVoiceState("listening");
+                speechControllerRef.current?.startListening();
+              }, 400);
             } else {
               setVoiceState("idle");
+              // Auto restart mic after every regular reply
+              setTimeout(() => {
+                setVoiceState("listening");
+                speechControllerRef.current?.startListening();
+              }, 400);
             }
           },
         );
       } else {
-        if (action === "OPEN_PAYMENT_GATEWAY") {
-          setVoiceState("payment_ready");
-          // Auto-open Razorpay immediately (text mode or muted)
-          await handleOpenRazorpayCheckout();
-        } else if (action === "OFFER_PAYMENT") {
-          setVoiceState("payment_ready");
-        } else if (action === "STOP_RECOVERY") {
+        // Text mode or muted — set state immediately
+        if (turnAction === "STOP_RECOVERY" || turnAction === "ESCALATE_HUMAN") {
           setVoiceState("completed");
+        } else if (turnAction === "OFFER_PAYMENT") {
+          setVoiceState("payment_ready");
         } else {
           setVoiceState("idle");
         }
-      }
-
-      if (action === "COLLECT_PROMISE_DATE") {
-        toast.info("Promise-to-Pay recorded", { description: "Automated reminders are paused until your chosen date." });
-      } else if (action === "STOP_RECOVERY") {
-        toast.info("Recovery stopped", { description: "You will not receive any further automated reminders." });
-      } else if (action === "OPEN_PAYMENT_GATEWAY" || action === "OFFER_PAYMENT") {
-        setVoiceState("payment_ready");
       }
     },
     onError: (err) => {
@@ -249,15 +275,25 @@ export default function CustomerVoiceRecovery() {
 
   /**
    * Opens the Official Razorpay Standard Checkout in Test Mode.
-   * 1. Requests backend to create official Razorpay Test Order
-   * 2. Opens official Razorpay modal (UPI, Cards, Netbanking)
-   * 3. Sends response to backend for HMAC SHA256 signature verification
-   * 4. Only marks recovered after verification passes.
+   * Uses sessionDataRef (not sessionData) to avoid stale React closure in async callbacks.
    */
+  const handleOpenRazorpayCheckoutFromRef = async () => {
+    const sd = sessionDataRef.current;
+    if (!sd) return;
+    return openRazorpayWith(sd);
+  };
+
   const handleOpenRazorpayCheckout = async () => {
-    if (!sessionData) return;
+    const sd = sessionDataRef.current ?? sessionData;
+    if (!sd) return;
+    return openRazorpayWith(sd);
+  };
+
+  const openRazorpayWith = async (sd: NonNullable<typeof sessionData>) => {
 
     try {
+      // Stop any ongoing TTS before opening Razorpay to avoid conflicts
+      speechControllerRef.current?.stopSpeaking();
       setPaymentState("INITIALIZING_PAYMENT");
       setVoiceState("processing");
 
@@ -277,12 +313,12 @@ export default function CustomerVoiceRecovery() {
         key: order.keyId,
         amount: order.amount, // in paise
         currency: order.currency,
-        name: sessionData.merchantName,
-        description: `Recovery Payment (${sessionData.paymentId})`,
+        name: sd.merchantName,
+        description: "Recovery Payment (" + sd.paymentId + ")",
         order_id: order.orderId,
         prefill: {
-          name: sessionData.customerName,
-          email: sessionData.customerEmail,
+          name: sd.customerName,
+          email: sd.customerEmail,
         },
         theme: {
           color: "#0f766e",

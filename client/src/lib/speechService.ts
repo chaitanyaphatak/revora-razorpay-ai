@@ -142,6 +142,7 @@ export class BrowserSpeechController {
   private recognition: any = null;
   private isListening = false;
   private preferredLanguage = "hi-IN"; // Hinglish / Indian Hindi default, also listens to Indian English
+  private currentUtterance: SpeechSynthesisUtterance | null = null;
 
   constructor(
     private onTranscript: (transcript: string, isFinal: boolean) => void,
@@ -261,6 +262,7 @@ export class BrowserSpeechController {
 
       const cleaned = cleanTextForSpeech(text);
       const utterance = new SpeechSynthesisUtterance(cleaned);
+      this.currentUtterance = utterance;
       
       // Calibrated rate for crystal clear Hinglish pronunciation (not rushed)
       utterance.rate = 0.94;
