@@ -148,15 +148,28 @@ describe("Voice Recovery Channel Engine & Store", () => {
     const { processGeminiVoiceTurn } = await import("./ai/geminiVoiceRecovery.js");
     const session = createVoiceRecoverySession("P-98421");
 
-    // 1. Customer asks WHY payment failed
+    // Turn 1: Customer asks WHY payment failed
     const turn1 = await processGeminiVoiceTurn(session, "Mera payment kyu fail hua tha?");
     expect(turn1.replyText).toContain("timeout");
     expect(turn1.intent).toBe("ASK_FAILURE_REASON");
+    expect(turn1.action).toBe("OFFER_PAYMENT");
 
-    // 2. Customer asks to pay / send link / retry
-    const turn2 = await processGeminiVoiceTurn(session, "Payment link bhejo mai wapas try karunga");
+    // Add Turn 1 to transcript
+    addSessionTranscriptTurn(session.sessionId, { role: "user", text: "Mera payment kyu fail hua tha?" });
+    addSessionTranscriptTurn(session.sessionId, { role: "assistant", text: turn1.replyText, intent: turn1.intent });
+
+    // Turn 2: Customer affirms with "ha open karo" -> MUST NOT repeat failure explanation, MUST trigger gateway
+    const turn2 = await processGeminiVoiceTurn(session, "ha open karo");
     expect(turn2.action).toBe("OPEN_PAYMENT_GATEWAY");
     expect(turn2.openGateway).toBe(true);
+    expect(turn2.replyText).not.toContain("timeout ho gaya tha");
+
+    // Turn 3 test: Customer says "payment page kholo" directly
+    const session2 = createVoiceRecoverySession("P-54102");
+    const turn3 = await processGeminiVoiceTurn(session2, "payment mode open karo");
+    expect(turn3.action).toBe("OPEN_PAYMENT_GATEWAY");
+    expect(turn3.openGateway).toBe(true);
   });
 });
+
 

@@ -113,65 +113,76 @@ export async function processGeminiVoiceTurn(
   const failureExp = failureExplanations[session.failureReason] ??
     `payment ek technical issue ki wajah se fail hui thi — aapka koi paisa cut nahi hua`;
 
+  // Check last conversation state
+  const lastTurns = session.transcript.filter((t) => t.role !== "system");
+  const lastAssistantTurn = [...lastTurns].reverse().find((t) => t.role === "assistant");
+  const hadOfferedPayment = lastAssistantTurn && (
+    lastAssistantTurn.intent === "ASK_FAILURE_REASON" ||
+    lastAssistantTurn.intent === "OFFER_PAYMENT" ||
+    lastAssistantTurn.intent === "PAYMENT_METHOD_PROBLEM" ||
+    lastAssistantTurn.text.toLowerCase().includes("open") ||
+    lastAssistantTurn.text.toLowerCase().includes("karen") ||
+    lastAssistantTurn.text.toLowerCase().includes("karun") ||
+    lastAssistantTurn.text.toLowerCase().includes("link") ||
+    lastAssistantTurn.text.toLowerCase().includes("retry")
+  );
+
   // Fallback intelligent heuristic in case API key is absent or offline
   const generateFallbackResponse = (): VoiceTurnResponse => {
-    const input = userInput.toLowerCase();
+    const input = userInput.toLowerCase().trim();
 
-    // Customer asking WHY payment failed
+    // 1. Direct or contextual payment opening intent
+    const isPaymentAffirmative =
+      input === "ha" || input === "haan" || input === "yes" || input === "theek hai" ||
+      input === "ok" || input === "okay" || input === "sure" || input === "karo" ||
+      input === "kardo" || input === "kar do" || input === "chalo" || input === "sahi hai";
+
+    const hasPaymentOpenKeywords =
+      input.includes("open") || input.includes("kholo") || input.includes("khol") ||
+      input.includes("khol do") || input.includes("kardo") || input.includes("kar do") ||
+      input.includes("payment page") || input.includes("payment mode") || input.includes("payment screen") ||
+      input.includes("payment link") || input.includes("page open") || input.includes("mode open") ||
+      input.includes("screen open") || input.includes("link open") || input.includes("checkout") ||
+      input.includes("gateway") || input.includes("link bhejo") || input.includes("link do") ||
+      input.includes("link send") || input.includes("pay karna") || input.includes("pay karta") ||
+      input.includes("pay karunga") || input.includes("abhi pay") || input.includes("wapas try") ||
+      input.includes("retry") || input.includes("dobara") || input.includes("razorpay");
+
+    if ((hadOfferedPayment && isPaymentAffirmative) || hasPaymentOpenKeywords) {
+      return {
+        replyText: `Bilkul ${session.customerName} ji! Main abhi aapke liye secure payment gateway open kar raha hoon — aap UPI, Card ya Netbanking se ₹${session.amount.toLocaleString("en-IN")} safely complete kar sakte hain.`,
+        intent: "RETRY_PAYMENT",
+        action: "OPEN_PAYMENT_GATEWAY",
+        openGateway: true,
+        actionPayload: { suggestedPaymentMethod: "card_or_upi" },
+      };
+    }
+
+    // 2. Customer asking WHY payment failed
     if (
       input.includes("kyun") || input.includes("kyu") || input.includes("why") ||
       input.includes("failed") || input.includes("fail") || input.includes("kya hua") ||
-      input.includes("reason") || input.includes("problem") || input.includes("issue")
+      input.includes("reason") || input.includes("wajah") || input.includes("problem") || input.includes("issue")
     ) {
       return {
-        replyText: `${session.customerName} ji, ${failureExp}. Aapka koi paisa account se nahi gaya. Kya aap abhi secure link se retry karna chahenge?`,
+        replyText: `${session.customerName} ji, ${failureExp}. Aapka koi paisa account se nahi gaya. Kya main payment page abhi open karun?`,
         intent: "ASK_FAILURE_REASON",
         action: "OFFER_PAYMENT",
         actionPayload: { suggestedPaymentMethod: "card_or_upi" },
       };
     }
 
-    // Customer says pay now / send link / retry — open gateway directly
-    if (
-      input.includes("abhi pay") || input.includes("pay karta") || input.includes("payment link") ||
-      input.includes("link bhejo") || input.includes("link do") || input.includes("link send") ||
-      input.includes("retry") || input.includes("wapas try") || input.includes("dobara") ||
-      input.includes("checkout") || input.includes("gateway") || input.includes("open karo") ||
-      input.includes("open kar") || input.includes("pay kar") || input.includes("karlunga") ||
-      input.includes("karna hai") || input.includes("karta hoon")
-    ) {
-      return {
-        replyText: `Bilkul ${session.customerName} ji! Main abhi aapke liye secure Razorpay checkout open kar raha hoon — aap UPI, Card ya Netbanking se ₹${session.amount.toLocaleString("en-IN")} safely pay kar sakte hain.`,
-        intent: "RETRY_PAYMENT",
-        action: "OPEN_PAYMENT_GATEWAY",
-        openGateway: true,
-        actionPayload: { suggestedPaymentMethod: "card_or_upi" },
-      };
-    }
-
-    // Generic pay intent
-    if (
-      input.includes("pay") || input.includes("link") || input.includes("karein") ||
-      input.includes("kese") || input.includes("haan") || input.includes("yes")
-    ) {
-      return {
-        replyText: `Haan ji bilkul! Main aapke screen par secure Razorpay payment link activate kar raha hoon. Aap bina kisi extra charge ke Card ya alternative UPI se complete kar sakte hain.`,
-        intent: "RETRY_PAYMENT",
-        action: "OPEN_PAYMENT_GATEWAY",
-        openGateway: true,
-        actionPayload: { suggestedPaymentMethod: "card_or_upi" },
-      };
-    }
-
+    // 3. Specific payment method issue
     if (input.includes("upi") || input.includes("server") || input.includes("timeout") || input.includes("paise cut")) {
       return {
-        replyText: `Samajh gaya! ${failureExp}. Aap chahein toh Card ya Netbanking se safely complete kar sakte hain — kya main payment screen abhi open karun?`,
+        replyText: `Samajh gaya! ${failureExp}. Aap bina kisi dikkat ke Card ya Netbanking se safely complete kar sakte hain — kya main payment screen abhi open karun?`,
         intent: "PAYMENT_METHOD_PROBLEM",
         action: "OFFER_PAYMENT",
         actionPayload: { suggestedPaymentMethod: "card" },
       };
     }
 
+    // 4. Promise to pay later
     if (
       input.includes("kal") || input.includes("baad me") || input.includes("later") ||
       input.includes("salary") || input.includes("date") || input.includes("tarikh") ||
@@ -185,6 +196,7 @@ export async function processGeminiVoiceTurn(
       };
     }
 
+    // 5. Customer declining
     if (
       input.includes("nahi") || input.includes("cancel") || input.includes("stop") ||
       input.includes("don't") || input.includes("mat") || input.includes("nahi karna")
@@ -197,6 +209,7 @@ export async function processGeminiVoiceTurn(
       };
     }
 
+    // 6. Human escalation
     if (
       input.includes("human") || input.includes("agent") || input.includes("support") ||
       input.includes("executive") || input.includes("baat karao") || input.includes("insaan")
@@ -209,8 +222,9 @@ export async function processGeminiVoiceTurn(
       };
     }
 
+    // 7. General greeting / query
     return {
-      replyText: `Namaste ${session.customerName} ji! Main ReVora Sahayak hoon. ${session.merchantName} ke ₹${session.amount.toLocaleString("en-IN")} ke pending payment ke regarding aapse baat kar raha hoon. ${failureExp}. Kya main aapki payment complete karne mein help karun?`,
+      replyText: `Namaste ${session.customerName} ji! Main ReVora Sahayak hoon. ${session.merchantName} ke ₹${session.amount.toLocaleString("en-IN")} ke pending payment ke regarding aapse baat kar raha hoon. Kya main payment page open karke aapki help karun?`,
       intent: "GENERAL_QUERY",
       action: "EXPLAIN_CONTEXT",
     };
@@ -220,61 +234,62 @@ export async function processGeminiVoiceTurn(
     return generateFallbackResponse();
   }
 
-  const recentTranscript = session.transcript
-    .filter((t) => t.role !== "system")
-    .slice(-6)
-    .map((t) => `${t.role === "assistant" ? "Assistant" : "Customer"}: ${t.text}`)
-    .join("\n");
+  // Build native multi-turn conversation for Gemini 2.0 Flash
+  const systemPrompt = `You are "ReVora Sahayak", an empathetic, concise, and highly effective AI Revenue Recovery Assistant for ${session.merchantName}.
+You are speaking in real-time with customer ${session.customerName} regarding their failed payment of ₹${session.amount.toLocaleString("en-IN")}.
 
-  const promptContext = {
-    customerName: session.customerName,
-    merchantName: session.merchantName,
-    amount: session.amount,
-    currency: session.currency,
-    failureReason: session.failureReason,
-    attemptNumber: session.attemptNumber,
-    recentConversation: recentTranscript,
-    latestCustomerInput: userInput,
-  };
+FAILURE REASON: ${failureExp}. (No money was deducted from customer account).
 
-  // Map failure reason to human-readable Hinglish explanation for the AI
-  const failureExplanationForAI: Record<string, string> = {
-    upi_timeout: "UPI transaction bank server ki wajah se timeout hua, paise nahi kate",
-    bank_server_down: "HDFC bank core server momentarily down tha — technical glitch, customer ki galti nahi",
-    insufficient_funds: "payment ke waqt account balance kam tha",
-    network_drop: "3DS OTP ke dauran mobile data drop hua",
-    daily_limit_exceeded: "aaj ki UPI daily limit puri thi",
-    upi_pin_retry_limit: "wrong UPI PIN ki wajah se account temporarily lock tha",
-    card_security_block: "bank ne high-value transaction security block kiya tha",
-    gateway_timeout: "payment gateway network timeout — server issue tha",
-    card_expired: "saved card expired ho gaya hai",
-    session_expired: "netbanking session idle ho kar expire hua",
-    otp_timed_out: "OTP delivery mein delay, OTP expire hua",
-  };
-  const failureNote = failureExplanationForAI[session.failureReason] ?? "technical issue ki wajah se payment fail hui";
+CRITICAL CONVERSATIONAL RULES:
+1. ALWAYS REMEMBER PREVIOUS TURNS:
+   - If in the previous turn you already explained why payment failed and asked if they want to pay/open the payment screen, and the customer now says "ha", "open karo", "payment page kholo", "payment mode open karo", "khol do", "theek hai", "link do", or anything affirmative:
+     -> DO NOT repeat the failure reason explanation!
+     -> Immediately say: "Bilkul! Main abhi payment page open kar raha hoon." and set action="OPEN_PAYMENT_GATEWAY", openGateway=true.
+2. WHEN CUSTOMER WANTS TO PAY:
+   - Whenever customer says to pay, open payment page, open payment mode, send link, retry, or confirms with "yes/ha/karo":
+     -> action="OPEN_PAYMENT_GATEWAY", openGateway=true.
+3. WHEN CUSTOMER ASKS WHY PAYMENT FAILED:
+   - Explain the reason concisely in Hinglish (1-2 sentences) and politely ask if you should open the payment page for them.
+   - action="OFFER_PAYMENT", intent="ASK_FAILURE_REASON".
+4. WHEN CUSTOMER ASKS TO PAY LATER (salary, kal, next week):
+   - action="COLLECT_PROMISE_DATE", intent="PROMISE_TO_PAY".
+5. WHEN CUSTOMER SAYS NO / CANCEL / STOP:
+   - action="STOP_RECOVERY", intent="CUSTOMER_DECLINED".
+6. WHEN CUSTOMER ASKS FOR HUMAN AGENT:
+   - action="ESCALATE_HUMAN", intent="NEEDS_HUMAN_SUPPORT".
 
-  const systemPrompt = `You are "ReVora Sahayak", an empathetic, intelligent, and highly professional AI Revenue Recovery Assistant for ${session.merchantName}.
-You are speaking directly with customer ${session.customerName} about their failed payment of ₹${session.amount.toLocaleString("en-IN")}.
-
-FAILURE CONTEXT (explain this when asked): ${failureNote}. Koi paisa account se nahi gaya.
-
-LANGUAGE & TONE GUIDELINES:
-- Speak naturally in warm Hinglish (Hindi + English Roman script). Example: "Namaste Rahul ji, aapka payment UPI glitch ki wajah se fail hua tha — koi paisa nahi kata."
-- Keep replies concise (2 sentences max) — this is spoken aloud.
-- Always be polite, respectful, and reassuring.
-- If customer asks why payment failed (kyu, kyun, failed, reason, kya hua) — explain the failure clearly in Hinglish using FAILURE CONTEXT above, then offer to retry.
-
-ACTION RULES (follow strictly):
-1. Customer says: "pay karna hai", "link do", "link bhejo", "retry", "wapas try", "checkout open karo", "abhi pay", "payment karta hoon", "haan" (yes after offer) → action: OPEN_PAYMENT_GATEWAY, openGateway: true
-2. Customer asks failure reason but doesn't confirm payment yet → action: OFFER_PAYMENT (gentle), intent: ASK_FAILURE_REASON
-3. Customer says pay later / salary date / kal / next week → action: COLLECT_PROMISE_DATE
-4. Customer declines / stop / nahi / mat → action: STOP_RECOVERY
-5. Customer asks for human / agent / executive / baat karao → action: ESCALATE_HUMAN
-
-SECURITY (HARD RULES):
-- NEVER ask for OTP, UPI PIN, CVV, card number, or passwords.
-- NEVER say payment is done until gateway confirms.
+STYLE GUIDELINES:
+- Speak warm, natural Hinglish (Roman script).
+- Maximum 1 to 2 sentences per reply (this is spoken aloud).
+- NEVER ask for OTP, PIN, password, or CVV.
 - Return ONLY valid JSON matching the schema.`;
+
+  // Format valid alternating Gemini message contents
+  const contents: Array<{ role: "user" | "model"; parts: Array<{ text: string }> }> = [];
+
+  // Filter non-system messages from history (up to last 6)
+  const history = session.transcript.filter((t) => t.role === "user" || t.role === "assistant").slice(-6);
+
+  for (const turn of history) {
+    contents.push({
+      role: turn.role === "assistant" ? "model" : "user",
+      parts: [{ text: turn.text }],
+    });
+  }
+
+  // Add the current incoming user turn
+  contents.push({
+    role: "user",
+    parts: [{ text: userInput }],
+  });
+
+  // Ensure first turn in contents is always "user" (Gemini requirement)
+  if (contents.length > 0 && contents[0].role !== "user") {
+    contents.unshift({
+      role: "user",
+      parts: [{ text: `Namaste, main ${session.customerName} hoon.` }],
+    });
+  }
 
   try {
     const response = await fetch(
@@ -284,14 +299,9 @@ SECURITY (HARD RULES):
         headers: { "content-type": "application/json", "x-goog-api-key": apiKey },
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: systemPrompt }] },
-          contents: [
-            {
-              role: "user",
-              parts: [{ text: `Current recovery context and customer input:\n${JSON.stringify(promptContext)}` }],
-            },
-          ],
+          contents,
           generationConfig: {
-            temperature: 0.2,
+            temperature: 0.1,
             maxOutputTokens: 350,
             thinkingConfig: { thinkingLevel: "minimal" },
             responseMimeType: "application/json",
@@ -314,6 +324,9 @@ SECURITY (HARD RULES):
         .join("") ?? "";
 
     const parsed = JSON.parse(content) as VoiceTurnResponse;
+    if (parsed.action === "OPEN_PAYMENT_GATEWAY") {
+      parsed.openGateway = true;
+    }
     return parsed;
   } catch (error) {
     console.warn("[GeminiVoice] Error executing Gemini request:", error);
