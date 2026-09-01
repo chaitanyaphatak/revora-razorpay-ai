@@ -289,8 +289,6 @@ export default function AutomationSimulator() {
       </div>
     </section>
 
-    <EnvironmentStrip><div className="flex gap-2"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" /><div><strong>Demo environment — simulated recovery only.</strong> Runs create clearly labelled synthetic policy, action, and audit evidence only after deterministic policy validation. They never charge a customer, send a real email, SMS, or WhatsApp message, retry a provider payment, or collect money.</div></div></EnvironmentStrip>
-
     <section className="rr-stagger grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
       <MetricCard label="Active Automations" value={metrics.active.toLocaleString("en-IN")} icon={Workflow} tone="teal" />
       <MetricCard label="Simulated Executions" value={metrics.executions.toLocaleString("en-IN")} icon={Activity} tone="blue" />

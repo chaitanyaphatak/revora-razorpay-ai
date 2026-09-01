@@ -1,5 +1,6 @@
 import { getPolicyDecisionsForPayment } from "./policyData.js";
 import { getInvoiceDashboard, getReceivablesAnalytics } from "./invoiceData.js";
+import { getDemoPayment, listDemoCustomers, getVoiceRecoverySessionByPayment } from "./voiceRecoveryStore.js";
 
 type SupabasePayment = {
   id: number;
@@ -320,16 +321,130 @@ function buildPaymentQuery(filters: PaymentFilters) {
 export async function listPayments(filters: PaymentFilters) {
   const pageSize = Math.min(MAX_PAGE_SIZE, filters.pageSize);
   const result = await requestSupabase<SupabasePayment[]>(buildPaymentQuery({ ...filters, pageSize }), { count: true });
+  const normalized = result.data.map(normalizePayment);
+
+  // If on page 1, include demo payments if they match the filters
+  if (filters.page === 1) {
+    const demoItems = listDemoCustomers().map((c) => getDemoPayment(c.paymentId)!).filter(Boolean);
+    for (const demo of demoItems) {
+      const matchesSearch = !filters.search || demo.id.toLowerCase().includes(filters.search.toLowerCase()) || demo.customerId.toLowerCase().includes(filters.search.toLowerCase());
+      const matchesStatus = !filters.status || demo.status.toLowerCase() === filters.status.toLowerCase();
+      if (matchesSearch && matchesStatus && !normalized.some((p) => p.id === demo.id)) {
+        normalized.unshift(demo);
+      }
+    }
+  }
+
   return {
-    payments: result.data.map(normalizePayment),
+    payments: normalized,
     page: filters.page,
     pageSize,
-    total: result.total ?? 0,
+    total: (result.total ?? 0) + (filters.page === 1 ? 2 : 0),
   };
 }
 
 export async function getPaymentDetail(paymentId: string) {
   const safePaymentId = escapeFilterValue(paymentId);
+
+  // Check demo customer payments first
+  const demoPayment = getDemoPayment(safePaymentId);
+  if (demoPayment) {
+    const session = getVoiceRecoverySessionByPayment(safePaymentId);
+    const policyDecisions = await getPolicyDecisionsForPayment(safePaymentId).catch(() => []);
+    const demoCustomer = listDemoCustomers().find((c) => c.paymentId === safePaymentId);
+
+    const demoCase: NormalizedRecoveryCase = {
+      id: 99991,
+      paymentId: safePaymentId,
+      recoveryProbability: demoPayment.recoveryProbability,
+      recommendation: "voice_recovery",
+      confidence: 0.88,
+      status: demoPayment.status === "recovered" ? "recovered" : session ? session.status : "voice_recommended",
+      diagnosis: `Hinglish Voice Recovery recommended for ${demoCustomer?.customerName ?? "Customer"} (Amount: ₹${demoPayment.amount}, Reason: ${demoPayment.failureReason?.replace(/_/g, " ")}).`,
+      reasoning: `AI Recovery Engine evaluated customer profile (${demoCustomer?.notes ?? "High intent customer"}). High propensity for recovery via conversational voice channel with alternative payment routing.`,
+      createdAt: demoPayment.timestamp,
+      reviewedBy: null,
+      humanDecision: null,
+      reviewedAt: null,
+    };
+
+    const demoAuditTimeline = [
+      {
+        id: 10001,
+        paymentId: safePaymentId,
+        aiDecision: "voice_recovery",
+        diagnosis: "Payment failure detected (UPI timeout / limit).",
+        recoveryProbability: demoPayment.recoveryProbability,
+        confidence: 0.88,
+        policyResult: "approved",
+        action: "recommend_voice_recovery",
+        executionResult: "success",
+        amountRecovered: demoPayment.status === "recovered" ? demoPayment.amount : 0,
+        reason: `ReVora recovery rules engine recommended Voice Recovery in Hinglish for ${demoCustomer?.customerName ?? "Customer"}.`,
+        timestamp: new Date(Date.now() - 3600000).toISOString(),
+      },
+    ];
+
+    if (session) {
+      demoAuditTimeline.push({
+        id: 10002,
+        paymentId: safePaymentId,
+        aiDecision: "voice_recovery",
+        diagnosis: "Voice recovery email sent.",
+        recoveryProbability: demoPayment.recoveryProbability,
+        confidence: 0.88,
+        policyResult: "approved",
+        action: "send_recovery_email",
+        executionResult: "success",
+        amountRecovered: session.recoveredAmount,
+        reason: `Customer recovery email sent to ${session.customerEmail}. Session status: ${session.status}.`,
+        timestamp: session.startedAt,
+      });
+
+      if (session.status === "recovered") {
+        demoAuditTimeline.push({
+          id: 10003,
+          paymentId: safePaymentId,
+          aiDecision: "voice_recovery",
+          diagnosis: "Razorpay Test payment successful.",
+          recoveryProbability: 1.0,
+          confidence: 1.0,
+          policyResult: "approved",
+          action: "payment_completed",
+          executionResult: "success",
+          amountRecovered: session.recoveredAmount,
+          reason: `Customer ${session.customerName} completed payment of ₹${session.amount} via Razorpay Test Mode (${session.paymentReference}).`,
+          timestamp: session.endedAt ?? new Date().toISOString(),
+        });
+      }
+    }
+
+    return {
+      payment: demoPayment,
+      recoveryCase: demoCase,
+      actions: session
+        ? [
+            {
+              id: 9001,
+              paymentId: safePaymentId,
+              actionType: "voice_recovery",
+              executionStatus: session.status,
+              amountRecovered: session.recoveredAmount,
+              executedAt: session.startedAt,
+              message: `Hinglish Voice Recovery Session (${session.sessionId}). Outcome: ${session.outcome ?? session.status}.`,
+            },
+          ]
+        : [],
+      policyDecisions,
+      auditTimeline: demoAuditTimeline,
+      customerHistory: {
+        recentPaymentCount: 3,
+        successfulPayments: 2,
+        recoveredPayments: demoPayment.status === "recovered" ? 1 : 0,
+      },
+    };
+  }
+
   const paymentResult = await requestSupabase<SupabasePayment[]>(`payments?payment_id=eq.${encodeURIComponent(safePaymentId)}&select=*`);
   const payment = paymentResult.data[0];
   if (!payment) return null;

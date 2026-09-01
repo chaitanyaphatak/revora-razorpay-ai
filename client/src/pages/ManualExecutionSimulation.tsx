@@ -93,16 +93,6 @@ export default function ManualExecutionSimulation() {
       </div>
     </section>
 
-    <EnvironmentStrip>
-      <div className="flex gap-3">
-        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
-        <div>
-          <p className="text-sm font-bold text-amber-950">Simulation only — no external execution</p>
-          <p className="mt-1 text-xs leading-5 text-amber-900">This records an operator-selected test outcome and its audit evidence. It cannot retry a payment, send a message, charge a customer, alter a payment provider, or collect money.</p>
-        </div>
-      </div>
-    </EnvironmentStrip>
-
     <div className="grid gap-5 xl:grid-cols-[.88fr_1.12fr]">
       <section className="rr-surface p-5 sm:p-6">
         <div className="flex items-start justify-between gap-3">

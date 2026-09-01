@@ -13,6 +13,22 @@ import { invoiceRecoveryActions, simulateInvoiceRecovery } from "./recovery/doma
 import { recordInvoiceSimulation } from "./recovery/data/invoiceSimulationStore.js";
 import { generateGeminiInvoiceExplanation } from "./recovery/ai/geminiInvoiceRecommendation.js";
 import { simulateAutomationRecovery, simulateOverdueInvoiceAutomation } from "./recovery/domain/automationSimulation.js";
+import {
+  addSessionTranscriptTurn,
+  createVoiceRecoverySession,
+  getCustomerRecipientInfo,
+  getDemoCustomerByPaymentId,
+  getVoiceRecoveryAnalytics,
+  getVoiceRecoverySession,
+  getVoiceRecoverySessionByPayment,
+  listDemoCustomers,
+  recordVoiceOutcome,
+  updateVoiceSession,
+  verifyAndCompleteVoicePayment,
+} from "./recovery/data/voiceRecoveryStore.js";
+import { processGeminiVoiceTurn } from "./recovery/ai/geminiVoiceRecovery.js";
+import { sendRecoveryEmail } from "./recovery/data/emailService.js";
+import { createRazorpayOrder, verifyRazorpayPaymentSignature } from "./recovery/data/razorpayService.js";
 
 const manualSimulationInput = z.object({
   paymentId: z.string().trim().min(1).max(64).regex(/^[A-Za-z0-9_-]+$/),
@@ -183,6 +199,177 @@ export const appRouter = router({
       });
       invalidateDashboardOverviewCache();
       return { automation, persisted };
+    }),
+
+    voice: router({
+      listDemoCustomers: publicProcedure.query(() => listDemoCustomers()),
+      createSession: publicProcedure
+        .input(
+          z.object({
+            paymentId: z.string().trim().min(1).max(64),
+            merchantName: z.string().trim().max(80).optional(),
+          }),
+        )
+        .mutation(async ({ input }) => {
+          const customer = getDemoCustomerByPaymentId(input.paymentId);
+          const recipientInfo = customer ? await getCustomerRecipientInfo(customer.customerId) : null;
+
+          console.log(`[VoiceRouter] createSession paymentId=${input.paymentId} customerId=${customer?.customerId} supabaseEmail=${recipientInfo?.email ?? "NOT FOUND — using fallback"}`);
+
+          const session = createVoiceRecoverySession(
+            input.paymentId,
+            input.merchantName,
+            recipientInfo ? { name: recipientInfo.name, email: recipientInfo.email } : undefined,
+          );
+          const recoveryUrl = `/recover/${session.sessionId}`;
+          const directPayUrl = `/recover/${session.sessionId}?mode=direct`;
+
+          const emailResult = await sendRecoveryEmail({
+            to: session.customerEmail,
+            recipientName: session.customerName,
+            amount: session.amount,
+            currency: session.currency,
+            failureReason: session.failureReason,
+            merchantName: session.merchantName,
+            recoveryUrl,
+            directPayUrl,
+            sessionId: session.sessionId,
+          });
+
+          const emailPreview = {
+            subject: emailResult.subject,
+            recipientName: session.customerName,
+            recipientEmail: session.customerEmail,
+            amount: session.amount,
+            failureReason: session.failureReason,
+            merchantName: session.merchantName,
+            recoveryUrl,
+            directPayUrl,
+            sessionId: session.sessionId,
+            deliveredVia: emailResult.deliveredVia,
+            messageId: emailResult.messageId,
+            bodyText: emailResult.textContent,
+          };
+
+          return { session, emailPreview };
+        }),
+      getSession: publicProcedure
+        .input(z.object({ sessionId: z.string().trim().min(1) }))
+        .query(({ input }) => {
+          const session = getVoiceRecoverySession(input.sessionId);
+          if (!session) return null;
+          return {
+            sessionId: session.sessionId,
+            paymentId: session.paymentId,
+            customerName: session.customerName,
+            customerEmail: session.customerEmail,
+            merchantName: session.merchantName,
+            amount: session.amount,
+            currency: session.currency,
+            failureReason: session.failureReason,
+            status: session.status,
+            language: session.language,
+            transcript: session.transcript,
+            promiseToPayDate: session.promiseToPayDate,
+            recoveredAmount: session.recoveredAmount,
+            startedAt: session.startedAt,
+            endedAt: session.endedAt,
+          };
+        }),
+      sendTurn: publicProcedure
+        .input(
+          z.object({
+            sessionId: z.string().trim().min(1),
+            userInput: z.string().trim().min(1).max(800),
+          }),
+        )
+        .mutation(async ({ input }) => {
+          const session = getVoiceRecoverySession(input.sessionId);
+          if (!session) throw new Error("Recovery session not found.");
+
+          addSessionTranscriptTurn(input.sessionId, {
+            role: "user",
+            text: input.userInput,
+          });
+
+          const turnResult = await processGeminiVoiceTurn(session, input.userInput);
+
+          addSessionTranscriptTurn(input.sessionId, {
+            role: "assistant",
+            text: turnResult.replyText,
+            intent: turnResult.intent,
+          });
+
+          if (turnResult.action === "OFFER_PAYMENT") {
+            updateVoiceSession(input.sessionId, { status: "payment_ready", customerIntent: turnResult.intent });
+          } else if (turnResult.action === "STOP_RECOVERY") {
+            await recordVoiceOutcome(input.sessionId, { outcomeType: "CUSTOMER_DECLINED", reason: turnResult.actionPayload?.reason });
+          } else if (turnResult.action === "COLLECT_PROMISE_DATE") {
+            await recordVoiceOutcome(input.sessionId, { outcomeType: "PROMISE_TO_PAY", promiseToPayDate: turnResult.actionPayload?.promiseDate });
+          } else if (turnResult.action === "ESCALATE_HUMAN") {
+            await recordVoiceOutcome(input.sessionId, { outcomeType: "NEEDS_HUMAN_SUPPORT", reason: turnResult.actionPayload?.reason });
+          }
+
+          const updatedSession = getVoiceRecoverySession(input.sessionId);
+          return { turnResult, session: updatedSession };
+        }),
+      createPaymentOrder: publicProcedure
+        .input(z.object({ sessionId: z.string().trim().min(1) }))
+        .mutation(async ({ input }) => {
+          const session = getVoiceRecoverySession(input.sessionId);
+          if (!session) throw new Error("Recovery session not found.");
+          const order = await createRazorpayOrder({
+            amount: session.amount,
+            currency: session.currency,
+            receipt: session.sessionId,
+            notes: {
+              customerName: session.customerName,
+              paymentId: session.paymentId,
+            },
+          });
+          return { order, session };
+        }),
+      verifyPayment: publicProcedure
+        .input(
+          z.object({
+            sessionId: z.string().trim().min(1),
+            razorpayPaymentId: z.string().min(1, "Razorpay payment ID is required"),
+            razorpayOrderId: z.string().min(1, "Razorpay order ID is required"),
+            razorpaySignature: z.string().min(1, "Razorpay signature is required"),
+            paymentMethod: z.string().optional(),
+          }),
+        )
+        .mutation(async ({ input }) => {
+          const isValid = verifyRazorpayPaymentSignature({
+            razorpayOrderId: input.razorpayOrderId,
+            razorpayPaymentId: input.razorpayPaymentId,
+            razorpaySignature: input.razorpaySignature,
+          });
+
+          if (!isValid) {
+            throw new Error("Razorpay payment signature verification failed. Payment cannot be marked successful.");
+          }
+
+          return verifyAndCompleteVoicePayment(input.sessionId, {
+            razorpayPaymentId: input.razorpayPaymentId,
+            razorpayOrderId: input.razorpayOrderId,
+            paymentMethod: input.paymentMethod || "razorpay_standard_checkout",
+          });
+        }),
+
+      recordOutcome: publicProcedure
+        .input(
+          z.object({
+            sessionId: z.string().trim().min(1),
+            outcomeType: z.enum(["PROMISE_TO_PAY", "CUSTOMER_DECLINED", "NEEDS_HUMAN_SUPPORT"]),
+            promiseToPayDate: z.string().optional(),
+            reason: z.string().optional(),
+          }),
+        )
+        .mutation(async ({ input }) => {
+          return recordVoiceOutcome(input.sessionId, input);
+        }),
+      analytics: publicProcedure.query(() => getVoiceRecoveryAnalytics()),
     }),
   }),
 

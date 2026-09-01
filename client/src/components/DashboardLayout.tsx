@@ -11,6 +11,7 @@ import {
 import { useIsMobile } from "@/hooks/useMobile";
 import { GlobalCommandPalette } from "@/components/recoverai/GlobalCommandPalette";
 import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 
 type NavItem = { icon: typeof LayoutDashboard; label: string; path: string; tag?: string };
 
@@ -52,6 +53,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const utils = trpc.useUtils();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [manualSimulationNotice, setManualSimulationNotice] = useState<{ paymentId: string; action: string; status: string; timestamp: string } | null>(null);
+  const [voiceRecoveryNotice, setVoiceRecoveryNotice] = useState<{ paymentId: string; customerName: string; amount: number; paymentReference: string; timestamp: string } | null>(null);
   const [hasUnreadManualSimulation, setHasUnreadManualSimulation] = useState(false);
   const pageTitle = titleFor(location);
 
@@ -69,11 +71,75 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       if (!detail?.paymentId || !detail.timestamp) return;
       setManualSimulationNotice({ paymentId: detail.paymentId, action: detail.action ?? "manual simulation", status: detail.status ?? "recorded", timestamp: detail.timestamp });
       setHasUnreadManualSimulation(true);
-      window.setTimeout(() => setHasUnreadManualSimulation(false), 6_000);
+      window.setTimeout(() => setHasUnreadManualSimulation(false), 8_000);
     };
+
+    const handleVoiceRecovered = (detail: { paymentId?: string; customerName?: string; amount?: number; paymentReference?: string; timestamp?: string }) => {
+      if (!detail?.paymentId) return;
+      const notice = {
+        paymentId: detail.paymentId,
+        customerName: detail.customerName ?? "Customer",
+        amount: detail.amount ?? 2999,
+        paymentReference: detail.paymentReference ?? "pay_verified",
+        timestamp: detail.timestamp ?? new Date().toISOString(),
+      };
+      setVoiceRecoveryNotice(notice);
+      setHasUnreadManualSimulation(true);
+
+      // Toast alert on merchant screen
+      toast.success(`🎉 Payment Recovered: ₹${notice.amount.toLocaleString("en-IN")}`, {
+        description: `${notice.customerName} completed Razorpay payment (${notice.paymentReference})`,
+      });
+
+      // Invalidate all query caches in real-time (zero-refresh)
+      void utils.recovery.dashboard.invalidate();
+      void utils.recovery.operationsCenter.invalidate();
+      void utils.recovery.voice.analytics.invalidate();
+      void utils.recovery.payments.invalidate();
+
+      window.setTimeout(() => setHasUnreadManualSimulation(false), 15_000);
+    };
+
+    const onVoicePaymentRecovered = (event: Event) => {
+      const detail = (event as CustomEvent<{ paymentId?: string; customerName?: string; amount?: number; paymentReference?: string; timestamp?: string }>).detail;
+      handleVoiceRecovered(detail);
+    };
+
+    const onStorageChange = (e: StorageEvent) => {
+      if (e.key === "revora_voice_recovered" && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          handleVoiceRecovered(parsed);
+        } catch {
+          // ignore
+        }
+      }
+    };
+
+    let channel: BroadcastChannel | null = null;
+    try {
+      channel = new BroadcastChannel("revora_voice_channel");
+      channel.onmessage = (msgEvent) => {
+        if (msgEvent.data?.type === "PAYMENT_RECOVERED") {
+          handleVoiceRecovered(msgEvent.data);
+        }
+      };
+    } catch (e) {
+      // BroadcastChannel fallback
+    }
+
     window.addEventListener("revora:manual-simulation-recorded", onManualSimulationRecorded);
-    return () => window.removeEventListener("revora:manual-simulation-recorded", onManualSimulationRecorded);
-  }, []);
+    window.addEventListener("revora:voice-payment-recovered", onVoicePaymentRecovered);
+    window.addEventListener("storage", onStorageChange);
+
+    return () => {
+      window.removeEventListener("revora:manual-simulation-recorded", onManualSimulationRecorded);
+      window.removeEventListener("revora:voice-payment-recovered", onVoicePaymentRecovered);
+      window.removeEventListener("storage", onStorageChange);
+      channel?.close();
+    };
+  }, [utils]);
+
 
   return <>
     <Sidebar collapsible="icon" className="rr-sidebar border-r border-slate-200/90 bg-white">
@@ -102,11 +168,44 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       </SidebarContent>
       <SidebarFooter className="border-t border-slate-100 p-2"><SidebarMenu><SidebarMenuItem><SidebarMenuButton onClick={() => setLocation("/settings")} tooltip="Settings" className="rr-nav-item"><Settings2 className="h-4 w-4" /><span>Settings</span></SidebarMenuButton></SidebarMenuItem></SidebarMenu></SidebarFooter>
     </Sidebar>
-    <SidebarInset className="bg-[#f7f8fa] overflow-y-auto overscroll-y-contain [scrollbar-gutter:stable] [transform:translateZ(0)]">
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur-xl sm:px-6 [transform:translateZ(0)]">
+    <SidebarInset className="bg-[#f7f8fa] min-w-0">
+      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur-xl sm:px-6">
         <div className="flex min-w-0 items-center gap-3"><SidebarTrigger className="rr-icon-button md:hidden" />{isMobile ? null : <><span className="text-xs font-medium text-slate-400">Revenue Recovery</span><span className="text-xs text-slate-300">/</span></>}<span className="truncate text-sm font-semibold text-slate-800">{pageTitle}</span></div>
-        <div className="flex items-center gap-2"><button onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))} className="rr-search-trigger hidden min-w-72 items-center gap-2 sm:flex"><span className="text-slate-400">Search customers, payments, invoices...</span><kbd>⌘ K</kbd></button><button className={`rr-icon-button relative ${hasUnreadManualSimulation ? "rr-notification-bell" : ""}`} onClick={() => { setNotificationsOpen(value => !value); setHasUnreadManualSimulation(false); }} aria-label={hasUnreadManualSimulation ? "New manual simulation notification" : "Notifications"}><Bell className="h-4 w-4" />{hasUnreadManualSimulation ? <span className="rr-notification-dot absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-rose-500" /> : null}</button></div>
-        {notificationsOpen ? <div className="rr-floating-surface absolute right-4 top-14 w-72 rounded-xl border border-slate-200 bg-white p-3"><p className="text-xs font-extrabold text-slate-800">Notifications</p>{manualSimulationNotice ? <button type="button" onClick={() => { setNotificationsOpen(false); setLocation("/activity"); }} className="mt-2 w-full rounded-lg border border-violet-100 bg-violet-50 p-2.5 text-left text-xs leading-5 text-violet-900 transition-colors hover:bg-violet-100"><span className="block font-bold">Manual simulation recorded</span><span className="mt-0.5 block font-mono text-[10px] text-violet-700">{manualSimulationNotice.paymentId} · {manualSimulationNotice.status}</span><span className="mt-1 block text-[10px] text-violet-700">View timestamped audit evidence in Activity</span></button> : <p className="mt-2 rounded-lg bg-slate-50 p-2.5 text-xs leading-5 text-slate-500">Recovery monitoring is using synthetic payment events.</p>}</div> : null}
+        <div className="flex items-center gap-2"><button onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))} className="rr-search-trigger hidden min-w-72 items-center gap-2 sm:flex"><span className="text-slate-400">Search customers, payments, invoices...</span><kbd>⌘ K</kbd></button><button className={`rr-icon-button relative ${hasUnreadManualSimulation ? "rr-notification-bell" : ""}`} onClick={() => { setNotificationsOpen(value => !value); setHasUnreadManualSimulation(false); }} aria-label={hasUnreadManualSimulation ? "New notification" : "Notifications"}><Bell className="h-4 w-4" />{hasUnreadManualSimulation ? <span className="rr-notification-dot absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white animate-ping" /> : null}</button></div>
+        {notificationsOpen ? <div className="rr-floating-surface absolute right-4 top-14 w-80 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xl space-y-2 z-50">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+            <p className="text-xs font-bold text-slate-900">Live Recovery Alerts</p>
+            <span className="text-[10px] font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full">Real-time</span>
+          </div>
+
+          {voiceRecoveryNotice && (
+            <button type="button" onClick={() => { setNotificationsOpen(false); setLocation("/activity"); }} className="w-full rounded-xl border border-emerald-200 bg-emerald-50/80 p-3 text-left transition-colors hover:bg-emerald-100/70 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-emerald-950 flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-emerald-600 animate-pulse" />
+                  Voice AI Recovery Succeeded!
+                </span>
+                <span className="text-[10px] font-bold text-emerald-800">₹{voiceRecoveryNotice.amount.toLocaleString("en-IN")}</span>
+              </div>
+              <p className="text-[11px] text-emerald-800">
+                <strong>{voiceRecoveryNotice.customerName}</strong> completed Razorpay payment (<span className="font-mono text-[9px]">{voiceRecoveryNotice.paymentId}</span>).
+              </p>
+              <span className="block text-[10px] font-semibold text-emerald-700 pt-0.5">Click to view audit record in Activity →</span>
+            </button>
+          )}
+
+          {manualSimulationNotice && (
+            <button type="button" onClick={() => { setNotificationsOpen(false); setLocation("/activity"); }} className="w-full rounded-xl border border-violet-100 bg-violet-50 p-2.5 text-left text-xs leading-5 text-violet-900 transition-colors hover:bg-violet-100">
+              <span className="block font-bold">Manual simulation recorded</span>
+              <span className="mt-0.5 block font-mono text-[10px] text-violet-700">{manualSimulationNotice.paymentId} · {manualSimulationNotice.status}</span>
+              <span className="mt-1 block text-[10px] text-violet-700">View timestamped audit evidence in Activity</span>
+            </button>
+          )}
+
+          {!voiceRecoveryNotice && !manualSimulationNotice && (
+            <p className="rounded-lg bg-slate-50 p-2.5 text-xs leading-5 text-slate-500">No unread alerts. Recovery monitoring active.</p>
+          )}
+        </div> : null}
       </header>
       <main className="min-h-[calc(100vh-4rem)] p-4 sm:p-6 lg:p-8">{children}</main>
     </SidebarInset>

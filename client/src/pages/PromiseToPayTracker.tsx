@@ -18,7 +18,6 @@ export default function PromiseToPayTracker() {
 
   return <div className="rr-page mx-auto max-w-7xl space-y-5 pb-10">
     <Link href="/invoices"><Button variant="ghost" className="-ml-3 rounded-lg text-slate-600 hover:bg-slate-100"><ArrowLeft className="mr-2 h-4 w-4" />Back to invoices</Button></Link>
-    {hasDemoRows ? <EnvironmentStrip><span><strong>Simulation demonstration commitments.</strong> Promise-to-Pay records linked to an invoice beginning with <code>DEMO-</code> are synthetic scenarios for review. They are not customer commitments.</span></EnvironmentStrip> : null}
     <section className="rr-surface border-l-4 border-l-violet-500 p-6 sm:p-7">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div><p className="rr-eyebrow">Receivables commitments</p><h1 className="mt-2 text-3xl font-semibold tracking-[-.05em] text-slate-950">Promise-to-Pay tracker</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Track operator-recorded simulated payment commitments. Active commitments past their promised date are flagged as missed for human review.</p></div>
@@ -33,6 +32,5 @@ export default function PromiseToPayTracker() {
         <div className="flex items-center justify-between gap-3 border-t border-slate-100 px-5 py-4 sm:px-6"><p className="text-xs text-slate-500">{tracker.data?.total ?? 0} commitment{tracker.data?.total === 1 ? "" : "s"}</p><div className="flex gap-2"><Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(value => value - 1)} className="rounded-lg">Previous</Button><Button variant="outline" size="sm" disabled={rows.length < 20} onClick={() => setPage(value => value + 1)} className="rounded-lg">Next</Button></div></div>
       </>}
     </section>
-    <section className="rounded-2xl border border-amber-100 bg-amber-50 p-5"><div className="flex gap-3"><CircleAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" /><div><p className="text-sm font-bold text-amber-950">Missed-promise detection is a review signal</p><p className="mt-1 text-sm leading-6 text-amber-900">A commitment is flagged when it remains active after its promised date. ReVora does not mark it kept, send a follow-up, or change an invoice automatically.</p></div></div></section>
   </div>;
 }

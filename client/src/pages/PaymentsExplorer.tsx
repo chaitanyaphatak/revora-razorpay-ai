@@ -27,7 +27,6 @@ export default function PaymentsExplorer() {
   return <div className="rr-page mx-auto max-w-7xl space-y-5 pb-10">
     <section className="flex flex-col gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-end sm:justify-between">
       <div><p className="rr-eyebrow">Revenue operations</p><h1 className="mt-1 text-3xl font-semibold tracking-[-.05em] text-slate-950">Payments with a recovery path</h1><p className="mt-2 max-w-2xl text-sm text-slate-500">Search and prioritize synthetic payment records. Scores are recovery probabilities, not execution guarantees.</p></div>
-      <div className="rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">Simulation-only environment</div>
     </section>
 
     <section className="rr-surface p-4 sm:p-5">

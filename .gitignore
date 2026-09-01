@@ -106,7 +106,8 @@ temp/
 *.sqlite
 *.sqlite3
 
-# Webdev artifacts (checkpoint zips, migrations, etc.)
+# Webdev & IDE artifacts
 .webdev/
-
 .project-config.json
+.gemini/
+.agents/

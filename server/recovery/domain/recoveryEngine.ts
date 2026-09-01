@@ -127,6 +127,19 @@ function actionProfile(action: RecoveryAction) {
   return { risk: "low" as const, humanEffort: "none" as const };
 }
 
+export function isVoiceRecoveryEligible(payment: NormalizedPayment): { eligible: boolean; reason: string } {
+  if (payment.status !== "failed" && payment.status !== "pending") {
+    return { eligible: false, reason: "Voice recovery is only recommended for failed or at-risk payments." };
+  }
+  if (payment.amount < 1000) {
+    return { eligible: false, reason: "Payment amount is below the voice recovery recommendation threshold (₹1,000)." };
+  }
+  if (payment.attemptNumber >= 3) {
+    return { eligible: false, reason: "Maximum recovery attempts reached." };
+  }
+  return { eligible: true, reason: "Payment is eligible for AI Voice Recovery Channel in Hinglish." };
+}
+
 export function getActionCandidates(payment: NormalizedPayment): ActionCandidate[] {
   return recoveryActions.map((action) => {
     const policy = evaluatePolicy(payment, action);

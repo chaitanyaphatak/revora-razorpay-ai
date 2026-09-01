@@ -21,6 +21,7 @@ import WhatIfSimulator from "./pages/WhatIfSimulator";
 import AutomationSimulator from "./pages/AutomationSimulator";
 import ActivityWorkspace from "./pages/ActivityWorkspace";
 import AnalyticsWorkspace from "./pages/AnalyticsWorkspace";
+import CustomerVoiceRecovery from "./pages/CustomerVoiceRecovery";
 import { AgentsWorkspace, CustomersWorkspace, RecoveryWorkspace, RiskWorkspace } from "./pages/RevenueWorkspaces";
 
 function WorkspaceLoading() {
@@ -29,29 +30,41 @@ function WorkspaceLoading() {
 
 function Router() {
   return (
-    <DashboardLayout><Suspense fallback={<WorkspaceLoading />}><Switch>
-      <Route path={"/"} component={OperationsDashboard} />
-      <Route path={"/payments"} component={PaymentsExplorer} />
-      <Route path={"/payments/:paymentId"} component={PaymentDetail} />
-      <Route path={"/simulator"} component={WhatIfSimulator} />
-      <Route path={"/manual-simulation"} component={ManualExecutionSimulation} />
-      <Route path={"/ai-brief"} component={AIBrief} />
-      <Route path={"/assistant"} component={MerchantAssistant} />
-      <Route path={"/control-center"} component={ControlCenter} />
-      <Route path={"/activity"} component={ActivityWorkspace} />
-      <Route path={"/risk"} component={RiskWorkspace} />
-      <Route path={"/recovery"} component={RecoveryWorkspace} />
-      <Route path={"/customers"} component={CustomersWorkspace} />
-      <Route path={"/invoices/promises"} component={PromiseToPayTracker} />
-      <Route path={"/invoices/:invoiceId"} component={InvoiceDetail} />
-      <Route path={"/invoices"} component={ReceivablesDashboard} />
-      <Route path={"/ai-agents"} component={AgentsWorkspace} />
-      <Route path={"/automations"} component={AutomationSimulator} />
-      <Route path={"/analytics"} component={AnalyticsWorkspace} />
-      <Route path={"/settings"} component={SettingsWorkspace} />
-      <Route path={"/404"} component={NotFound} />
-      <Route component={NotFound} />
-    </Switch></Suspense></DashboardLayout>
+    <Suspense fallback={<WorkspaceLoading />}>
+      <Switch>
+        {/* Customer Voice Recovery Session (standalone clean customer view) */}
+        <Route path={"/recover/:sessionId"} component={CustomerVoiceRecovery} />
+
+        {/* Merchant Workspace Routes */}
+        <Route>
+          <DashboardLayout>
+            <Switch>
+              <Route path={"/"} component={OperationsDashboard} />
+              <Route path={"/payments"} component={PaymentsExplorer} />
+              <Route path={"/payments/:paymentId"} component={PaymentDetail} />
+              <Route path={"/simulator"} component={WhatIfSimulator} />
+              <Route path={"/manual-simulation"} component={ManualExecutionSimulation} />
+              <Route path={"/ai-brief"} component={AIBrief} />
+              <Route path={"/assistant"} component={MerchantAssistant} />
+              <Route path={"/control-center"} component={ControlCenter} />
+              <Route path={"/activity"} component={ActivityWorkspace} />
+              <Route path={"/risk"} component={RiskWorkspace} />
+              <Route path={"/recovery"} component={RecoveryWorkspace} />
+              <Route path={"/customers"} component={CustomersWorkspace} />
+              <Route path={"/invoices/promises"} component={PromiseToPayTracker} />
+              <Route path={"/invoices/:invoiceId"} component={InvoiceDetail} />
+              <Route path={"/invoices"} component={ReceivablesDashboard} />
+              <Route path={"/ai-agents"} component={AgentsWorkspace} />
+              <Route path={"/automations"} component={AutomationSimulator} />
+              <Route path={"/analytics"} component={AnalyticsWorkspace} />
+              <Route path={"/settings"} component={SettingsWorkspace} />
+              <Route path={"/404"} component={NotFound} />
+              <Route component={NotFound} />
+            </Switch>
+          </DashboardLayout>
+        </Route>
+      </Switch>
+    </Suspense>
   );
 }
 

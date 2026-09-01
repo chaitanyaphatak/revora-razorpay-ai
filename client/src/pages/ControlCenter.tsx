@@ -50,7 +50,6 @@ export default function ControlCenter() {
           <div className="rounded-lg bg-blue-50 p-3"><p className="text-[10px] font-bold uppercase tracking-wider text-blue-700">Min probability</p><p className="mt-1 text-lg font-semibold text-blue-900">{Math.round(data.autopilot.minProbability * 100)}%</p></div>
           <div className="rounded-lg bg-slate-50 p-3"><p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Retry boundary</p><p className="mt-1 text-lg font-semibold text-slate-800">{data.autopilot.maxRetryAttempt - 1} retry</p></div>
         </div>
-        <p className="mt-4 rounded-lg border border-amber-100 bg-amber-50 p-3 text-xs leading-5 text-amber-800"><strong>Configuration note:</strong> this phase renders the active deterministic policy profile. Editing policy limits remains intentionally unavailable until governed configuration controls are approved.</p>
       </section>
       <section className="rr-surface p-5 sm:p-6">
         <div className="flex items-center justify-between"><div><p className="rr-eyebrow">Autopilot activity</p><h2 className="mt-1 text-xl font-semibold tracking-[-.04em]">Eligible candidates and latest outcomes</h2></div><Bot className="h-5 w-5 text-blue-600" /></div>
