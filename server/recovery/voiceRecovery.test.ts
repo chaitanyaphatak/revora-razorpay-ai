@@ -144,11 +144,19 @@ describe("Voice Recovery Channel Engine & Store", () => {
     expect(updatedSession.promiseToPayDate).toBe("2026-09-05");
   });
 
-  it("aggregates recovery analytics after sessions", () => {
-    const analytics = getVoiceRecoveryAnalytics();
-    // After running above tests (multiple sessions), emailsSent should reflect them
-    expect(typeof analytics.metrics.emailsSent).toBe("number");
-    expect(typeof analytics.metrics.revenueRecovered).toBe("number");
-    expect(analytics.metrics.revenueRecovered).toBeGreaterThanOrEqual(0);
+  it("processes Hinglish failure explanation and payment gateway trigger intent", async () => {
+    const { processGeminiVoiceTurn } = await import("./ai/geminiVoiceRecovery.js");
+    const session = createVoiceRecoverySession("P-98421");
+
+    // 1. Customer asks WHY payment failed
+    const turn1 = await processGeminiVoiceTurn(session, "Mera payment kyu fail hua tha?");
+    expect(turn1.replyText).toContain("timeout");
+    expect(turn1.intent).toBe("ASK_FAILURE_REASON");
+
+    // 2. Customer asks to pay / send link / retry
+    const turn2 = await processGeminiVoiceTurn(session, "Payment link bhejo mai wapas try karunga");
+    expect(turn2.action).toBe("OPEN_PAYMENT_GATEWAY");
+    expect(turn2.openGateway).toBe(true);
   });
 });
+

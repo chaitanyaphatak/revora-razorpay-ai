@@ -132,6 +132,7 @@ export default function CustomerVoiceRecovery() {
     onSuccess: async (data) => {
       setInterimSpeech("");
       const reply = data.turnResult.replyText;
+      const action = data.turnResult.action;
 
       // Speak back assistant message if not muted and voice supported
       if (!isMuted && !useTextMode) {
@@ -139,10 +140,14 @@ export default function CustomerVoiceRecovery() {
         await speechControllerRef.current?.speak(
           reply,
           () => setVoiceState("speaking"),
-          () => {
-            if (data.turnResult.action === "OFFER_PAYMENT") {
+          async () => {
+            if (action === "OPEN_PAYMENT_GATEWAY") {
               setVoiceState("payment_ready");
-            } else if (data.turnResult.action === "STOP_RECOVERY") {
+              // Auto-open Razorpay after speech finishes
+              await handleOpenRazorpayCheckout();
+            } else if (action === "OFFER_PAYMENT") {
+              setVoiceState("payment_ready");
+            } else if (action === "STOP_RECOVERY") {
               setVoiceState("completed");
             } else {
               setVoiceState("idle");
@@ -150,21 +155,25 @@ export default function CustomerVoiceRecovery() {
           },
         );
       } else {
-        if (data.turnResult.action === "OFFER_PAYMENT") {
+        if (action === "OPEN_PAYMENT_GATEWAY") {
           setVoiceState("payment_ready");
-        } else if (data.turnResult.action === "STOP_RECOVERY") {
+          // Auto-open Razorpay immediately (text mode or muted)
+          await handleOpenRazorpayCheckout();
+        } else if (action === "OFFER_PAYMENT") {
+          setVoiceState("payment_ready");
+        } else if (action === "STOP_RECOVERY") {
           setVoiceState("completed");
         } else {
           setVoiceState("idle");
         }
       }
 
-      if (data.turnResult.action === "OFFER_PAYMENT") {
-        setVoiceState("payment_ready");
-      } else if (data.turnResult.action === "COLLECT_PROMISE_DATE") {
+      if (action === "COLLECT_PROMISE_DATE") {
         toast.info("Promise-to-Pay recorded", { description: "Automated reminders are paused until your chosen date." });
-      } else if (data.turnResult.action === "STOP_RECOVERY") {
+      } else if (action === "STOP_RECOVERY") {
         toast.info("Recovery stopped", { description: "You will not receive any further automated reminders." });
+      } else if (action === "OPEN_PAYMENT_GATEWAY" || action === "OFFER_PAYMENT") {
+        setVoiceState("payment_ready");
       }
     },
     onError: (err) => {
