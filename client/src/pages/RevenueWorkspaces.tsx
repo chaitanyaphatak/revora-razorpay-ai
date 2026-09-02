@@ -96,19 +96,24 @@ export function RiskWorkspace() {
 
     setTimeout(() => {
       setScanStep("Evaluating Hinglish Voice AI eligibility rules...");
-    }, 600);
+    }, 500);
 
     setTimeout(() => {
       setScanStep("Ranking highest-yield recovery opportunities...");
-    }, 1100);
+    }, 1000);
 
     setTimeout(() => {
       setIsScanning(false);
       setHasScanned(true);
+
+      const highPriorityCount = demoCustomers.data?.length ?? 6;
+      const totalAtRisk = (demoCustomers.data ?? []).reduce((sum, c) => sum + c.amount, 0) || 35400;
+      const totalFailedRecords = data?.total ?? data?.payments?.length ?? 50;
+
       toast.success("At-risk scan completed", {
-        description: "2 priority accounts detected for Hinglish Voice Recovery.",
+        description: `${highPriorityCount} priority accounts detected (${currency.format(totalAtRisk)}) out of ${totalFailedRecords} at-risk records.`,
       });
-    }, 1600);
+    }, 1500);
   };
 
   if (isLoading) return <LoadingSurface />;

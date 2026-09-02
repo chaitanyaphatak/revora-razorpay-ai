@@ -368,7 +368,7 @@ export async function getCustomerRecipientInfo(customerId: string): Promise<{ na
 
 export function createVoiceRecoverySession(
   paymentId: string,
-  merchantName = "Acme Inc.",
+  merchantName = "Mr. Sumit Sharma",
   recipientOverride?: { name?: string; email?: string },
 ): VoiceRecoverySession {
   const customer = demoCustomers.get(paymentId);
