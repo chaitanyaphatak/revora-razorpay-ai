@@ -102,7 +102,16 @@ export function verifyRazorpayPaymentSignature(params: {
       .update(`${params.razorpayOrderId}|${params.razorpayPaymentId}`)
       .digest("hex");
 
-    const isValid = generatedSignature === params.razorpaySignature;
+    const generatedBuffer = Buffer.from(generatedSignature, "utf8");
+    const providedBuffer = Buffer.from(params.razorpaySignature, "utf8");
+
+    // Constant-time comparison to prevent timing attacks
+    if (generatedBuffer.length !== providedBuffer.length) {
+      console.warn(`[RazorpayService] ❌ Signature length mismatch for order ${params.razorpayOrderId}`);
+      return false;
+    }
+
+    const isValid = crypto.timingSafeEqual(generatedBuffer, providedBuffer);
     if (isValid) {
       console.log(`[RazorpayService] ✅ Signature verified successfully for payment ${params.razorpayPaymentId}`);
     } else {

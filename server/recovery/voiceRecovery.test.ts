@@ -179,6 +179,51 @@ describe("Voice Recovery Channel Engine & Store", () => {
     expect(turn5.action).toBe("OPEN_PAYMENT_GATEWAY");
     expect(turn5.openGateway).toBe(true);
   });
+
+  it("safely verifies authentic Razorpay HMAC-SHA256 signatures and rejects mismatches using timingSafeEqual", async () => {
+    const { verifyRazorpayPaymentSignature } = await import("./data/razorpayService.js");
+    const crypto = await import("crypto");
+
+    const testSecret = "rzp_test_secret_key_12345";
+    process.env.RAZORPAY_KEY_SECRET = testSecret;
+
+    const orderId = "order_test_998877";
+    const paymentId = "pay_test_112233";
+
+    const validSignature = crypto
+      .createHmac("sha256", testSecret)
+      .update(`${orderId}|${paymentId}`)
+      .digest("hex");
+
+    // 1. Valid signature -> true
+    expect(
+      verifyRazorpayPaymentSignature({
+        razorpayOrderId: orderId,
+        razorpayPaymentId: paymentId,
+        razorpaySignature: validSignature,
+      }),
+    ).toBe(true);
+
+    // 2. Tampered signature of same length -> false
+    const tamperedSignature = validSignature.slice(0, -1) + (validSignature.endsWith("a") ? "b" : "a");
+    expect(
+      verifyRazorpayPaymentSignature({
+        razorpayOrderId: orderId,
+        razorpayPaymentId: paymentId,
+        razorpaySignature: tamperedSignature,
+      }),
+    ).toBe(false);
+
+    // 3. Different length signature -> false without error
+    expect(
+      verifyRazorpayPaymentSignature({
+        razorpayOrderId: orderId,
+        razorpayPaymentId: paymentId,
+        razorpaySignature: "short_invalid_sig",
+      }),
+    ).toBe(false);
+  });
 });
+
 
 
