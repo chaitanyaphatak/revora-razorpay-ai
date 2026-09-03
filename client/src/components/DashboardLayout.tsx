@@ -170,6 +170,25 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         }
       });
 
+      // Demo reset — clear notification and show info toast when 10-min auto-reset fires
+      es.addEventListener("demo_reset", (e: MessageEvent) => {
+        try {
+          const data = JSON.parse(e.data);
+          setVoiceRecoveryNotice(null);
+          setHasUnreadManualSimulation(false);
+          void utils.recovery.dashboard.invalidate();
+          void utils.recovery.operationsCenter.invalidate();
+          void utils.recovery.voice.analytics.invalidate();
+          void utils.recovery.payments.invalidate();
+          toast.info("🔄 Demo Reset: Payment reverted to failed", {
+            description: `Session for ${data.paymentId} is ready for the next demo run.`,
+            duration: 8_000,
+          });
+        } catch {
+          // ignore malformed
+        }
+      });
+
       es.addEventListener("connected", () => {
         console.log("[ReVora SSE] Connected to merchant notifications stream");
       });

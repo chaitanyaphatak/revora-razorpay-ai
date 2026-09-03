@@ -550,6 +550,50 @@ export async function verifyAndCompleteVoicePayment(
     timestamp: now,
   });
 
+  // 6. HACKATHON DEMO RESET — automatically revert to "failed" after 10 minutes
+  //    so the merchant can demo the full recovery flow again without server restart.
+  const DEMO_RESET_MS = 10 * 60 * 1000; // 10 minutes
+  setTimeout(() => {
+    const s = voiceSessions.get(sessionId);
+    if (s && s.status === "recovered") {
+      console.log(`[DemoReset] Reverting session ${sessionId} (${s.customerName}) back to active/failed for repeat demo.`);
+
+      // Reset voice session back to active state
+      s.status = "active";
+      s.outcome = null;
+      s.recoveredAmount = 0;
+      s.paymentReference = null;
+      s.endedAt = null;
+      s.stopReason = null;
+      s.customerIntent = null;
+      // Keep transcript intact for audit but add a reset marker
+      s.transcript.push({
+        id: `msg_reset_${Date.now()}`,
+        role: "system",
+        text: `[DEMO RESET] Session automatically reverted to active state after 10 minutes for hackathon demo repeatability.`,
+        timestamp: new Date().toISOString(),
+      });
+
+      // Reset demo customer back to failed
+      const dc = demoCustomers.get(s.paymentId);
+      if (dc) {
+        dc.status = "failed";
+      }
+
+      // Invalidate caches so dashboard reflects the reset
+      invalidateDashboardOverviewCache();
+
+      // Notify merchant dashboard of the reset
+      broadcastSSEEvent("demo_reset", {
+        type: "DEMO_RESET",
+        paymentId: s.paymentId,
+        sessionId,
+        message: "Demo reset: payment status reverted to failed for repeat demo.",
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }, DEMO_RESET_MS);
+
   return {
     success: true,
     session,
