@@ -350,7 +350,7 @@ export const appRouter = router({
             merchantName: z.string().trim().max(80).optional(),
           }),
         )
-        .mutation(async ({ input }) => {
+        .mutation(async ({ ctx, input }) => {
           const customer = getDemoCustomerByPaymentId(input.paymentId);
           const recipientInfo = customer ? await getCustomerRecipientInfo(customer.customerId) : null;
 
@@ -361,8 +361,24 @@ export const appRouter = router({
             input.merchantName,
             recipientInfo ? { name: recipientInfo.name, email: recipientInfo.email } : undefined,
           );
-          const recoveryUrl = `/recover/${session.sessionId}`;
-          const directPayUrl = `/recover/${session.sessionId}?mode=direct`;
+
+          let reqOrigin: string | undefined;
+          try {
+            if (ctx?.req?.headers?.origin) {
+              reqOrigin = String(ctx.req.headers.origin);
+            } else if (ctx?.req?.headers?.referer) {
+              reqOrigin = new URL(String(ctx.req.headers.referer)).origin;
+            }
+          } catch {}
+
+          const baseUrl = reqOrigin && !reqOrigin.includes("localhost")
+            ? reqOrigin
+            : (process.env.APP_URL && !process.env.APP_URL.includes("localhost")
+                ? process.env.APP_URL
+                : (process.env.NODE_ENV === "production" ? "https://revora-razorpay-ai.vercel.app" : (process.env.APP_URL || "http://localhost:3000"))).replace(/\/$/, "");
+
+          const recoveryUrl = `${baseUrl}/recover/${session.sessionId}`;
+          const directPayUrl = `${baseUrl}/recover/${session.sessionId}?mode=direct`;
 
           const emailResult = await sendRecoveryEmail({
             to: session.customerEmail,
@@ -374,6 +390,7 @@ export const appRouter = router({
             recoveryUrl,
             directPayUrl,
             sessionId: session.sessionId,
+            baseUrl,
           });
 
           const emailPreview = {

@@ -15,6 +15,7 @@ export type SendEmailOptions = {
   recoveryUrl: string;
   directPayUrl: string;
   sessionId: string;
+  baseUrl?: string;
 };
 
 export type EmailDeliveryResult = {
@@ -28,13 +29,20 @@ export type EmailDeliveryResult = {
 };
 
 export async function sendRecoveryEmail(options: SendEmailOptions): Promise<EmailDeliveryResult> {
-  const appUrl = (process.env.APP_URL || `http://localhost:${process.env.PORT || "3000"}`).replace(/\/$/, "");
-  const fullRecoveryUrl = options.recoveryUrl.startsWith("http") ? options.recoveryUrl : `${appUrl}${options.recoveryUrl}`;
-  const fullDirectPayUrl = options.directPayUrl.startsWith("http") ? options.directPayUrl : `${appUrl}${options.directPayUrl}`;
+  const fallbackProdUrl = "https://revora-razorpay-ai.vercel.app";
+  const rawBase = options.baseUrl || process.env.APP_URL;
+  let appUrl = rawBase && !rawBase.includes("localhost") ? rawBase : "";
+  if (!appUrl) {
+    if (process.env.NODE_ENV === "production" || process.env.VERCEL) {
+      appUrl = process.env.APP_URL || fallbackProdUrl;
+    } else {
+      appUrl = process.env.APP_URL || `http://localhost:${process.env.PORT || "3000"}`;
+    }
+  }
+  appUrl = appUrl.replace(/\/$/, "");
 
-  // Keep these for internal use / future use when app is deployed
-  void fullRecoveryUrl;
-  void fullDirectPayUrl;
+  const fullRecoveryUrl = options.recoveryUrl.startsWith("http") ? options.recoveryUrl : `${appUrl}${options.recoveryUrl.startsWith("/") ? "" : "/"}${options.recoveryUrl}`;
+  const fullDirectPayUrl = options.directPayUrl.startsWith("http") ? options.directPayUrl : `${appUrl}${options.directPayUrl.startsWith("/") ? "" : "/"}${options.directPayUrl}`;
 
   const currencyFormatter = new Intl.NumberFormat("en-IN", {
     style: "currency",
