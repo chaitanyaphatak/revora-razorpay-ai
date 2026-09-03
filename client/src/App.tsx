@@ -21,6 +21,7 @@ import WhatIfSimulator from "./pages/WhatIfSimulator";
 import AutomationSimulator from "./pages/AutomationSimulator";
 import ActivityWorkspace from "./pages/ActivityWorkspace";
 import AnalyticsWorkspace from "./pages/AnalyticsWorkspace";
+import LandingPage from "./pages/LandingPage";
 import CustomerVoiceRecovery from "./pages/CustomerVoiceRecovery";
 import { AgentsWorkspace, CustomersWorkspace, RecoveryWorkspace, RiskWorkspace } from "./pages/RevenueWorkspaces";
 
@@ -32,6 +33,10 @@ function Router() {
   return (
     <Suspense fallback={<WorkspaceLoading />}>
       <Switch>
+        {/* Landing Page (Jas Hero) on / and /landing */}
+        <Route path={"/"} component={LandingPage} />
+        <Route path={"/landing"} component={LandingPage} />
+
         {/* Customer Voice Recovery Session (standalone clean customer view) */}
         <Route path={"/recover/:sessionId"} component={CustomerVoiceRecovery} />
 
@@ -39,7 +44,7 @@ function Router() {
         <Route>
           <DashboardLayout>
             <Switch>
-              <Route path={"/"} component={OperationsDashboard} />
+              <Route path={"/app"} component={OperationsDashboard} />
               <Route path={"/payments"} component={PaymentsExplorer} />
               <Route path={"/payments/:paymentId"} component={PaymentDetail} />
               <Route path={"/simulator"} component={WhatIfSimulator} />

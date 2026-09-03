@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 
 const destinations = [
-  { label: "Overview", hint: "Revenue command center", icon: LayoutDashboard, path: "/" },
+  { label: "Overview", hint: "Revenue command center", icon: LayoutDashboard, path: "/app" },
   { label: "Revenue risk", hint: "Prioritized revenue opportunities", icon: ShieldAlert, path: "/risk" },
   { label: "Recovery center", hint: "Active recovery pipeline", icon: Gauge, path: "/recovery" },
   { label: "Customers", hint: "Customer revenue health", icon: Users, path: "/customers" },

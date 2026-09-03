@@ -17,7 +17,7 @@ type NavItem = { icon: typeof LayoutDashboard; label: string; path: string; tag?
 
 const sections: Array<{ label: string; items: NavItem[] }> = [
   { label: "Workspace", items: [
-    { icon: LayoutDashboard, label: "Overview", path: "/" },
+    { icon: LayoutDashboard, label: "Overview", path: "/app" },
     { icon: ShieldAlert, label: "Revenue risk", path: "/risk" },
     { icon: Gauge, label: "Recovery", path: "/recovery" },
     { icon: PlayCircle, label: "Manual simulation", path: "/manual-simulation", tag: "Safe" },
@@ -37,7 +37,7 @@ const sections: Array<{ label: string; items: NavItem[] }> = [
   ] },
 ];
 
-const titleFor = (path: string) => sections.flatMap(section => section.items).find(item => item.path === path)?.label ?? (path.startsWith("/payments/") ? "Payment detail" : path.startsWith("/invoices/") ? "Invoice detail" : path === "/settings" ? "Settings" : "Overview");
+const titleFor = (path: string) => sections.flatMap(section => section.items).find(item => item.path === path)?.label ?? (path === "/app" ? "Overview" : path.startsWith("/payments/") ? "Payment detail" : path.startsWith("/invoices/") ? "Invoice detail" : path === "/settings" ? "Settings" : "Overview");
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return <SidebarProvider style={{ "--sidebar-width": "258px" } as React.CSSProperties}>
@@ -146,8 +146,10 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       <SidebarHeader className="border-b border-slate-100 px-3 py-2.5">
         <div className="flex items-center gap-2.5 group-data-[collapsible=icon]:justify-center">
           <button onClick={toggleSidebar} className="rr-icon-button rr-sidebar-toggle shrink-0" aria-label="Toggle navigation"><PanelLeft className="h-4 w-4" /></button>
-          <button type="button" onClick={() => setLocation("/")} className="rr-brand min-w-0 overflow-hidden group-data-[collapsible=icon]:pointer-events-none group-data-[collapsible=icon]:max-w-0 group-data-[collapsible=icon]:opacity-0" aria-label="ReVora home">
-            <span className="rr-brand-mark" aria-hidden="true"><span>R</span></span>
+          <button type="button" onClick={() => setLocation("/app")} className="rr-brand min-w-0 overflow-hidden group-data-[collapsible=icon]:pointer-events-none group-data-[collapsible=icon]:max-w-0 group-data-[collapsible=icon]:opacity-0 flex items-center gap-2.5 p-1 rounded-xl transition-all" aria-label="ReVora home">
+            <span className="rr-brand-mark relative flex h-8 w-8 shrink-0 overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-xs p-0.5" aria-hidden="true">
+              <img src="/assets/revora-logo.png" alt="ReVora" className="h-full w-full object-cover rounded-lg" />
+            </span>
             <span className="rr-brand-copy">
               <span className="rr-brand-name">Re<span>Vora</span></span>
               <span className="rr-brand-tag">Revenue operations</span>
@@ -159,7 +161,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       <SidebarContent className="rr-scrollbar px-2 py-1">
         {sections.map(section => <div key={section.label} className="mb-1.5"><p className="rr-nav-label group-data-[collapsible=icon]:hidden">{section.label}</p><SidebarMenu>
           {section.items.map(item => {
-            const directOrNestedMatch = item.path === "/" ? location === "/" : location === item.path || location.startsWith(`${item.path}/`);
+            const directOrNestedMatch = item.path === "/app" ? location === "/app" : location === item.path || location.startsWith(`${item.path}/`);
             const hasMoreSpecificMatch = sections.flatMap(candidateSection => candidateSection.items).some(candidate => candidate.path !== item.path && candidate.path.startsWith(`${item.path}/`) && (location === candidate.path || location.startsWith(`${candidate.path}/`)));
             const active = directOrNestedMatch && !hasMoreSpecificMatch;
             return <SidebarMenuItem key={item.path}><SidebarMenuButton isActive={active} onClick={() => setLocation(item.path)} tooltip={item.label} className="rr-nav-item"><item.icon className="h-4 w-4" /><span>{item.label}</span>{item.tag ? <span className="ml-auto rounded-md bg-violet-50 px-1.5 py-0.5 text-[9px] font-bold text-violet-600 group-data-[collapsible=icon]:hidden">{item.tag}</span> : null}</SidebarMenuButton></SidebarMenuItem>;
@@ -207,7 +209,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           )}
         </div> : null}
       </header>
-      <main className="min-h-[calc(100vh-4rem)] p-4 sm:p-6 lg:p-8">{children}</main>
+      <main className="h-[calc(100vh-4rem)] overflow-y-auto p-4 sm:p-6 lg:p-8 flex flex-col">{children}</main>
     </SidebarInset>
   </>;
 }

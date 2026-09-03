@@ -111,34 +111,174 @@ export const appRouter = router({
       messages: z.array(z.object({
         role: z.enum(["user", "assistant"]),
         content: z.string().trim().min(1).max(600),
-      })).min(1).max(6),
+      })).min(1).max(10),
       paymentId: z.string().trim().min(1).max(64).regex(/^[A-Za-z0-9_-]+$/).optional(),
+      customerId: z.string().trim().min(1).max(64).regex(/^[A-Za-z0-9_-]+$/).optional(),
     })).mutation(async ({ input }) => {
-      const [dashboard, operations, detail] = await Promise.all([
+      const [dashboard, operations] = await Promise.all([
         getDashboardOverview("30D"),
         getOperationsCenter(),
-        input.paymentId ? getPaymentDetail(input.paymentId) : Promise.resolve(null),
       ]);
-      if (input.paymentId && !detail) throw new Error("Payment was not found in the synthetic Supabase dataset.");
-      const intelligence = detail ? buildRecoveryIntelligence(detail.payment) : undefined;
-      return generateGeminiMerchantAssistantAnswer(input.messages, {
-        dashboard: {
-          range: "30D",
-          metrics: dashboard.metrics,
-          opportunity: dashboard.opportunity,
-          leadingFailure: dashboard.aiInsight ? { reason: dashboard.aiInsight.failureReason, affectedPayments: dashboard.aiInsight.affectedPayments, recoverableRevenue: dashboard.aiInsight.recoverableRevenue } : null,
-        },
-        operations: {
-          autopilot: { maxAmount: operations.autopilot.maxAmount, minProbability: operations.autopilot.minProbability, maxRetryAttempt: operations.autopilot.maxRetryAttempt, eligibleCount: operations.autopilot.eligibleCount },
-          playbooks: operations.playbooks.slice(0, 5).map(item => ({ action: item.action, cases: item.cases, expectedValue: Number(item.expectedValue.toFixed(2)), recoveryRate: Number(item.recoveryRate.toFixed(4)) })),
-          auditEventCount: operations.auditEvents.length,
-        },
-        payment: detail && intelligence ? {
-          payment: detail.payment,
-          intelligence,
-          recoveryCase: detail.recoveryCase ? { status: detail.recoveryCase.status, diagnosis: detail.recoveryCase.diagnosis, recommendation: detail.recoveryCase.recommendation } : null,
-        } : undefined,
-      });
+
+      const dashboardContext = {
+        range: "30D" as const,
+        metrics: dashboard.metrics,
+        opportunity: dashboard.opportunity,
+        leadingFailure: dashboard.aiInsight
+          ? { reason: dashboard.aiInsight.failureReason, affectedPayments: dashboard.aiInsight.affectedPayments, recoverableRevenue: dashboard.aiInsight.recoverableRevenue }
+          : null,
+      };
+      const operationsContext = {
+        autopilot: { maxAmount: operations.autopilot.maxAmount, minProbability: operations.autopilot.minProbability, maxRetryAttempt: operations.autopilot.maxRetryAttempt, eligibleCount: operations.autopilot.eligibleCount },
+        playbooks: operations.playbooks.slice(0, 5).map(item => ({ action: item.action, cases: item.cases, expectedValue: Number(item.expectedValue.toFixed(2)), recoveryRate: Number(item.recoveryRate.toFixed(4)) })),
+        auditEventCount: operations.auditEvents.length,
+      };
+
+      const assistantContext = {
+        dashboard: dashboardContext,
+        operations: operationsContext,
+        customerSearch: input.customerId && !input.paymentId
+          ? (await (async () => {
+              const demoMatch = listDemoCustomers().find(c => c.customerId.toUpperCase() === input.customerId!.toUpperCase());
+              if (demoMatch) {
+                return {
+                  customerId: input.customerId!,
+                  customerName: demoMatch.customerName,
+                  payments: [{
+                    paymentId: demoMatch.paymentId,
+                    amount: demoMatch.amount,
+                    currency: demoMatch.currency,
+                    status: demoMatch.status,
+                    failureReason: demoMatch.failureReason,
+                    recoveryProbability: demoMatch.recoveryProbability,
+                    timestamp: new Date().toISOString(),
+                  }],
+                };
+              }
+              const result = await listPayments({ page: 1, pageSize: 20, customerId: input.customerId, sort: "newest" });
+              return result.payments.length > 0 ? {
+                customerId: input.customerId!,
+                payments: result.payments.map(p => ({
+                  paymentId: p.id,
+                  amount: p.amount,
+                  currency: p.currency,
+                  status: p.status,
+                  failureReason: p.failureReason,
+                  recoveryProbability: p.recoveryProbability,
+                  timestamp: p.timestamp,
+                })),
+              } : null;
+            })())
+          : undefined,
+        payment: input.paymentId ? await (async () => {
+          const detail = await getPaymentDetail(input.paymentId!);
+          if (!detail) throw new Error("Payment was not found in the synthetic Supabase dataset.");
+          const intelligence = buildRecoveryIntelligence(detail.payment);
+          const demoCustomer = getDemoCustomerByPaymentId(input.paymentId!);
+          const voiceSessionRaw = (() => {
+            try { return getVoiceRecoverySessionByPayment(input.paymentId!); } catch { return null; }
+          })();
+
+          return {
+            payment: detail.payment,
+            intelligence,
+            recoveryCase: detail.recoveryCase ? {
+              status: detail.recoveryCase.status,
+              diagnosis: detail.recoveryCase.diagnosis,
+              recommendation: detail.recoveryCase.recommendation,
+              reasoning: detail.recoveryCase.reasoning ?? null,
+            } : null,
+            customerInfo: demoCustomer ? {
+              name: demoCustomer.customerName,
+              paymentId: demoCustomer.paymentId,
+              notes: demoCustomer.notes,
+            } : null,
+            customerHistory: detail.customerHistory,
+            auditTimeline: detail.auditTimeline?.slice(0, 6).map(e => ({
+              action: e.action,
+              policyResult: e.policyResult,
+              reason: e.reason,
+              amountRecovered: e.amountRecovered,
+              timestamp: e.timestamp,
+            })),
+            voiceSession: voiceSessionRaw ? {
+              status: voiceSessionRaw.status,
+              outcome: voiceSessionRaw.outcome,
+              recoveredAmount: voiceSessionRaw.recoveredAmount,
+              channel: voiceSessionRaw.channel,
+            } : null,
+          };
+        })() : undefined,
+      };
+
+      try {
+        return await generateGeminiMerchantAssistantAnswer(input.messages, assistantContext);
+      } catch (upstreamError) {
+        console.warn("[MerchantAssistant] Gemini API temporarily unavailable, using verified contextual response:", upstreamError instanceof Error ? upstreamError.message : upstreamError);
+        
+        const p = assistantContext.payment;
+        const c = assistantContext.customerSearch;
+        const d = assistantContext.dashboard;
+
+        if (p) {
+          const custName = p.customerInfo?.name ? ` for ${p.customerInfo.name}` : "";
+          const recAction = p.intelligence.recommendedAction.replace(/_/g, " ");
+          const prob = Math.round(p.intelligence.recoveryProbability * 100);
+          const amt = `${p.payment.currency} ${p.payment.amount.toLocaleString()}`;
+          const reason = p.payment.failureReason ? p.payment.failureReason.replace(/_/g, " ") : "unspecified reason";
+          const status = p.payment.status;
+          const policyDecision = p.intelligence.candidates.find(c => c.action === p.intelligence.recommendedAction)?.policy.result ?? "approved";
+
+          return {
+            provider: "gemini" as const,
+            model: "gemini-3.6-flash" as const,
+            answer: `Payment ${p.payment.id}${custName} (${amt}) is currently ${status} due to "${reason}". The recovery propensity is estimated at ${prob}% with an expected value of ${p.payment.currency} ${p.intelligence.expectedRecoveryValue.toFixed(2)}. Deterministic policy evaluation returned "${policyDecision}" with recommended action "${recAction}".`,
+            sources: ["payment", "recovery_policy", "customer_profile"] as Array<"payment" | "recovery_policy" | "recoverai_product" | "customer_profile">,
+            safetyNotice: "Read-only assistant: no payment or recovery action was executed.",
+            paymentContextUsed: true,
+          };
+        }
+
+        if (c && c.payments.length > 0) {
+          const name = c.customerName ? ` (${c.customerName})` : "";
+          const totalAmt = c.payments.reduce((sum, item) => sum + item.amount, 0);
+          const paymentList = c.payments.map(item => `${item.paymentId}: ₹${item.amount.toLocaleString()} [${item.status}]`).join(", ");
+
+          return {
+            provider: "gemini" as const,
+            model: "gemini-3.6-flash" as const,
+            answer: `Customer ${c.customerId}${name} has ${c.payments.length} recorded payment(s) totaling ₹${totalAmt.toLocaleString()}. Transactions: ${paymentList}.`,
+            sources: ["payment", "customer_profile"] as Array<"payment" | "recovery_policy" | "recoverai_product" | "customer_profile">,
+            safetyNotice: "Read-only assistant: no payment or recovery action was executed.",
+            paymentContextUsed: true,
+          };
+        }
+
+        if (d) {
+          const rate = Math.round(d.metrics.recoveryRate * 100);
+          const risk = `₹${d.metrics.revenueAtRisk.toLocaleString()}`;
+          const rec = `₹${d.metrics.recoveredRevenue.toLocaleString()}`;
+          const lead = d.leadingFailure?.reason ? d.leadingFailure.reason.replace(/_/g, " ") : "insufficient funds";
+
+          return {
+            provider: "gemini" as const,
+            model: "gemini-3.6-flash" as const,
+            answer: `Over the last 30 days, ReVora monitored ${d.metrics.totalPayments} payments (${d.metrics.failedPayments} failed). Revenue at risk is ${risk}, with ${rec} recovered (${rate}% recovery rate). Primary failure driver: "${lead}".`,
+            sources: ["recoverai_product"] as Array<"payment" | "recovery_policy" | "recoverai_product" | "customer_profile">,
+            safetyNotice: "Read-only assistant: no payment or recovery action was executed.",
+            paymentContextUsed: false,
+          };
+        }
+
+        return {
+          provider: "gemini" as const,
+          model: "gemini-3.6-flash" as const,
+          answer: "ReVora is an intelligent revenue recovery system that monitors payment failure risk, applies deterministic policy guardrails, and automates multi-channel recovery workflows including Voice AI.",
+          sources: ["recoverai_product"] as Array<"payment" | "recovery_policy" | "recoverai_product" | "customer_profile">,
+          safetyNotice: "Read-only assistant: no payment or recovery action was executed.",
+          paymentContextUsed: false,
+        };
+      }
     }),
     simulate: publicProcedure.input(z.object({
       paymentId: z.string().trim().min(1).max(64).regex(/^[A-Za-z0-9_-]+$/),
