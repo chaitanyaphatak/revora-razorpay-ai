@@ -143,6 +143,9 @@ export class BrowserSpeechController {
   private isListening = false;
   private preferredLanguage = "hi-IN"; // Hinglish / Indian Hindi default, also listens to Indian English
   private currentUtterance: SpeechSynthesisUtterance | null = null;
+  private latestTranscript = "";
+  private hasCommittedFinal = false;
+  private silenceTimer: any = null;
 
   constructor(
     private onTranscript: (transcript: string, isFinal: boolean) => void,
@@ -151,6 +154,31 @@ export class BrowserSpeechController {
   ) {
     this.initRecognition();
     loadVoices();
+  }
+
+  private commitTranscript(text: string) {
+    const trimmed = text.trim();
+    if (!trimmed || this.hasCommittedFinal) return;
+    this.hasCommittedFinal = true;
+    this.latestTranscript = "";
+    if (this.silenceTimer) {
+      clearTimeout(this.silenceTimer);
+      this.silenceTimer = null;
+    }
+    this.stopListening();
+    this.onTranscript(trimmed, true);
+  }
+
+  private resetSilenceTimer() {
+    if (this.silenceTimer) {
+      clearTimeout(this.silenceTimer);
+    }
+    // Auto-commit on 1.1s of silence (especially crucial for Android Chrome & mobile browsers)
+    this.silenceTimer = setTimeout(() => {
+      if (this.latestTranscript.trim() && !this.hasCommittedFinal) {
+        this.commitTranscript(this.latestTranscript);
+      }
+    }, 1100);
   }
 
   private initRecognition() {
@@ -166,6 +194,8 @@ export class BrowserSpeechController {
 
       this.recognition.onstart = () => {
         this.isListening = true;
+        this.hasCommittedFinal = false;
+        this.latestTranscript = "";
         this.onStateChange?.("listening");
       };
 
@@ -182,29 +212,50 @@ export class BrowserSpeechController {
           }
         }
 
+        const candidateText = (finalTranscript || interim).trim();
+        if (candidateText) {
+          this.latestTranscript = candidateText;
+          this.onTranscript(candidateText, false);
+          this.resetSilenceTimer();
+        }
+
         if (finalTranscript.trim()) {
-          this.onTranscript(finalTranscript.trim(), true);
-        } else if (interim.trim()) {
-          this.onTranscript(interim.trim(), false);
+          this.commitTranscript(finalTranscript.trim());
         }
       };
 
       this.recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+        if (this.silenceTimer) {
+          clearTimeout(this.silenceTimer);
+          this.silenceTimer = null;
+        }
         this.isListening = false;
         this.onStateChange?.("idle");
         if (event.error === "no-speech") {
+          // If we had recorded speech before no-speech error, commit it
+          if (this.latestTranscript.trim() && !this.hasCommittedFinal) {
+            this.commitTranscript(this.latestTranscript);
+          }
           return;
         }
         if (event.error === "not-allowed") {
           this.onError("Microphone permission was denied. You can continue using text input.");
         } else {
-          this.onError(`Voice recognition note: ${event.error}`);
+          this.onError(`Voice recognition: ${event.error}`);
         }
       };
 
       this.recognition.onend = () => {
         this.isListening = false;
         this.onStateChange?.("idle");
+        if (this.silenceTimer) {
+          clearTimeout(this.silenceTimer);
+          this.silenceTimer = null;
+        }
+        // Critical for Mobile: if recognition ended on silence and had uncommitted speech, commit it now!
+        if (this.latestTranscript.trim() && !this.hasCommittedFinal) {
+          this.commitTranscript(this.latestTranscript);
+        }
       };
     } catch (err) {
       console.warn("[SpeechService] Failed to initialize SpeechRecognition:", err);
@@ -212,6 +263,13 @@ export class BrowserSpeechController {
   }
 
   public startListening(): boolean {
+    if (this.silenceTimer) {
+      clearTimeout(this.silenceTimer);
+      this.silenceTimer = null;
+    }
+    this.hasCommittedFinal = false;
+    this.latestTranscript = "";
+
     if (!this.recognition) {
       this.initRecognition();
       if (!this.recognition) {
@@ -232,6 +290,10 @@ export class BrowserSpeechController {
   }
 
   public stopListening() {
+    if (this.silenceTimer) {
+      clearTimeout(this.silenceTimer);
+      this.silenceTimer = null;
+    }
     if (this.recognition && this.isListening) {
       try {
         this.recognition.stop();
@@ -249,18 +311,28 @@ export class BrowserSpeechController {
     onEnd?: () => void,
   ): Promise<void> {
     return new Promise((resolve) => {
+      let isResolved = false;
+      const finish = () => {
+        if (isResolved) return;
+        isResolved = true;
+        onEnd?.();
+        resolve();
+      };
+
       if (!isSpeechSynthesisSupported()) {
         onStart?.();
-        setTimeout(() => {
-          onEnd?.();
-          resolve();
-        }, 1500);
+        setTimeout(finish, 1200);
         return;
       }
 
       window.speechSynthesis.cancel();
 
       const cleaned = cleanTextForSpeech(text);
+      if (!cleaned) {
+        finish();
+        return;
+      }
+
       const utterance = new SpeechSynthesisUtterance(cleaned);
       this.currentUtterance = utterance;
       
@@ -279,14 +351,16 @@ export class BrowserSpeechController {
       };
 
       utterance.onend = () => {
-        onEnd?.();
-        resolve();
+        finish();
       };
 
       utterance.onerror = () => {
-        onEnd?.();
-        resolve();
+        finish();
       };
+
+      // Safety timeout for mobile browsers where utterance.onend might not fire reliably
+      const maxEstimatedDurationMs = Math.max(2500, cleaned.length * 85 + 1500);
+      setTimeout(finish, maxEstimatedDurationMs);
 
       window.speechSynthesis.speak(utterance);
     });
@@ -298,4 +372,5 @@ export class BrowserSpeechController {
     }
   }
 }
+
 

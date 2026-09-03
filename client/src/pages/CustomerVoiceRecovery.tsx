@@ -220,6 +220,7 @@ export default function CustomerVoiceRecovery() {
         if (isFinal) {
           setInterimSpeech("");
           setVoiceState("processing");
+          speechControllerRef.current?.stopListening();
           sendTurnMutation.mutate({
             sessionId,
             userInput: transcript,
