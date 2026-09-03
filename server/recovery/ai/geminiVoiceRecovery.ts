@@ -148,12 +148,19 @@ export async function processGeminiVoiceTurn(
   const input = rawInput.toLowerCase();
 
   const isMarathiInput =
-    input.includes("का") || input.includes("झाला") || input.includes("झाली") ||
-    input.includes("करायचं") || input.includes("सांगा") || input.includes("पैसे") ||
-    input.includes("कसं") || input.includes("नको") || input.includes("नाही") ||
+    rawInput.includes("झाला") || rawInput.includes("झाली") || rawInput.includes("झालं") ||
+    rawInput.includes("करायचं") || rawInput.includes("सांगा") || rawInput.includes("नको") ||
+    rawInput.includes("नाही") || rawInput.includes("आहे") || rawInput.includes("काय झालं") ||
+    rawInput.includes("कशामुळे") || rawInput.includes("पैसे कटले") || rawInput.includes("उघडा") ||
+    rawInput.includes("लिंक द्या") || rawInput.includes("पेमेंट करायचं") ||
     input.includes("kashamule") || input.includes("karaycha") || input.includes("zhala") ||
-    rawInput.includes("का") || rawInput.includes("काय झालं") || rawInput.includes("करायचं");
+    input.includes("nako") || input.includes("naahi") || input.includes("aahe");
 
+  // Pure English detection (no Devanagari, no Hinglish keywords)
+  const hinglishMarkers = ["kyu", "kyun", "kya", "hai", "nahi", "mera", "aapka", "karo", "karna", "karte", "hoon", "tha", "hua", "gaya", "bilkul", "theek", "thik", "achha", "ji", "bhai", "yaar", "bata", "link", "de do", "kab", "ab", "abhi", "kal", "baad", "dobara", "phir"];
+  const hasDevanagari = /[\u0900-\u097F]/.test(rawInput);
+  const hasHinglish = hinglishMarkers.some((w) => input.includes(w));
+  const isEnglishInput = !hasDevanagari && !hasHinglish && !isMarathiInput && /^[a-zA-Z0-9\s.,?!'"()-]+$/.test(rawInput.trim());
 
   // FAST PATH 1: Customer asking WHY payment failed (Instant <10ms response)
   const isAskingFailureReason =
@@ -170,6 +177,24 @@ export async function processGeminiVoiceTurn(
       const marathiExp = marathiFailureExplanations[session.failureReason] ?? "पेमेंट तांत्रिक समस्येमुळे पूर्ण झाले नाही — खात्यातून पैसे कट झाले नाहीत";
       return {
         replyText: `${session.customerName} जी, ${marathiExp}. खात्यातून पैसे कट झाले नाहीत. मी सुरक्षित पेमेंट गेटवे आता उघडू का?`,
+        intent: "ASK_FAILURE_REASON",
+        action: "OFFER_PAYMENT",
+        actionPayload: { suggestedPaymentMethod: "card_or_upi" },
+      };
+    }
+    if (isEnglishInput) {
+      const englishExp: Record<string, string> = {
+        upi_timeout: "your UPI transaction timed out due to a bank server delay — no money was deducted from your account",
+        bank_server_down: "the bank server was temporarily down when you paid — this was a technical issue, not your fault",
+        insufficient_funds: "your account had insufficient balance at the time of payment",
+        network_drop: "your network disconnected before OTP verification could complete",
+        daily_limit_exceeded: "your UPI daily limit was reached — you can pay using Card or Netbanking with no limits",
+        card_expired: "your card has expired — you can easily pay using a new card or UPI",
+        gateway_timeout: "the payment gateway detected a network timeout — this was a server-side issue, not your fault",
+      };
+      const engExp = englishExp[session.failureReason] ?? "your payment failed due to a technical issue — no amount was deducted";
+      return {
+        replyText: `${session.customerName}, ${engExp}. Your money is completely safe. Shall I open the secure payment page for you right now?`,
         intent: "ASK_FAILURE_REASON",
         action: "OFFER_PAYMENT",
         actionPayload: { suggestedPaymentMethod: "card_or_upi" },
@@ -217,9 +242,18 @@ export async function processGeminiVoiceTurn(
     rawInput.includes("उघडा") || rawInput.includes("लिंक द्या");
 
   if ((hadOfferedPayment && isPaymentAffirmative) || hasPaymentOpenKeywords) {
-    if (isMarathiInput || rawInput.includes("हो") || rawInput.includes("करायचं") || rawInput.includes("करा")) {
+    if (isMarathiInput) {
       return {
         replyText: `नक्कीच ${session.customerName} जी! मी तुमच्यासाठी सुरक्षित Razorpay पेमेंट गेटवे उघडत आहे — तुम्ही UPI, Card किंवा Netbanking ने ₹${session.amount.toLocaleString("en-IN")} लगेच पूर्ण करू शकता.`,
+        intent: "RETRY_PAYMENT",
+        action: "OPEN_PAYMENT_GATEWAY",
+        openGateway: true,
+        actionPayload: { suggestedPaymentMethod: "card_or_upi" },
+      };
+    }
+    if (isEnglishInput) {
+      return {
+        replyText: `Absolutely ${session.customerName}! Opening the secure Razorpay payment page for you right now — you can pay ₹${session.amount.toLocaleString("en-IN")} via UPI, Card, or Netbanking safely.`,
         intent: "RETRY_PAYMENT",
         action: "OPEN_PAYMENT_GATEWAY",
         openGateway: true,
@@ -305,31 +339,31 @@ export async function processGeminiVoiceTurn(
   }
 
   // Build native multi-turn conversation for Gemini 2.0 Flash
+  const detectedInputLang = isMarathiInput ? "Marathi" : isEnglishInput ? "English" : "Hinglish";
   const systemPrompt = `You are "ReVora Sahayak", an empathetic, concise, and highly effective AI Revenue Recovery Assistant for ${session.merchantName}.
 You are speaking in real-time with customer ${session.customerName} regarding their failed payment of ₹${session.amount.toLocaleString("en-IN")}.
 
 FAILURE REASON: ${failureExp}. (No money was deducted from customer account).
+DETECTED CUSTOMER LANGUAGE THIS TURN: ${detectedInputLang}.
 
-CRITICAL CONVERSATIONAL RULES:
-1. ALWAYS REMEMBER PREVIOUS TURNS:
-   - If in the previous turn you already explained why payment failed and asked if they want to pay/open the payment screen, and the customer now says "ha", "open karo", "payment page kholo", "payment mode open karo", "khol do", "theek hai", "link do", or anything affirmative:
-     -> DO NOT repeat the failure reason explanation!
-     -> Immediately say: "Bilkul! Main abhi payment page open kar raha hoon." and set action="OPEN_PAYMENT_GATEWAY", openGateway=true.
-2. WHEN CUSTOMER WANTS TO PAY:
-   - Whenever customer says to pay, open payment page, open payment mode, send link, retry, or confirms with "yes/ha/karo":
-     -> action="OPEN_PAYMENT_GATEWAY", openGateway=true.
-3. WHEN CUSTOMER ASKS WHY PAYMENT FAILED:
-   - Explain the reason concisely in Hinglish (1-2 sentences) and politely ask if you should open the payment page for them.
-   - action="OFFER_PAYMENT", intent="ASK_FAILURE_REASON".
-4. WHEN CUSTOMER ASKS TO PAY LATER (salary, kal, next week):
-   - action="COLLECT_PROMISE_DATE", intent="PROMISE_TO_PAY".
-5. WHEN CUSTOMER SAYS NO / CANCEL / STOP:
-   - action="STOP_RECOVERY", intent="CUSTOMER_DECLINED".
-6. WHEN CUSTOMER ASKS FOR HUMAN AGENT:
-   - action="ESCALATE_HUMAN", intent="NEEDS_HUMAN_SUPPORT".
+🔴 MOST CRITICAL RULE — LANGUAGE MIRRORING:
+You MUST respond in the EXACT SAME LANGUAGE as the customer's current message.
+- Customer wrote in English → reply in polite Indian English ONLY.
+- Customer wrote in Hindi/Hinglish → reply in warm Hinglish (Roman script) ONLY.
+- Customer wrote in Marathi → reply in fluent native Marathi ONLY.
+- If the customer switches language mid-conversation, YOU ALSO switch immediately.
+- NEVER mix languages unless the customer themselves mixed them.
 
-STYLE GUIDELINES:
-- Speak warm, natural Hinglish (Roman script).
+CONVERSATIONAL RULES:
+1. If you already explained why payment failed and customer confirms (yes/ha/ho/karo/sure/open) → immediately set action="OPEN_PAYMENT_GATEWAY", openGateway=true. Do NOT repeat failure reason.
+2. Customer wants to pay → action="OPEN_PAYMENT_GATEWAY", openGateway=true.
+3. Customer asks why → explain concisely in their language → action="OFFER_PAYMENT".
+4. Customer wants to pay later → action="COLLECT_PROMISE_DATE", intent="PROMISE_TO_PAY".
+5. Customer says no → action="STOP_RECOVERY", intent="CUSTOMER_DECLINED".
+6. Customer asks for human → action="ESCALATE_HUMAN".
+
+STYLE:
+- Maximum 2 sentences. Warm. Empathetic. Natural.
 - NEVER ask for OTP, PIN, password, or CVV.
 - Return ONLY valid JSON matching the schema.`;
 

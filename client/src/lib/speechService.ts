@@ -233,8 +233,10 @@ export class BrowserSpeechController {
       this.recognition = new SpeechRecognitionClass();
       this.recognition.continuous = true;
       this.recognition.interimResults = true;
-      this.recognition.maxAlternatives = 1;
-      this.recognition.lang = this.preferredLanguage;
+      this.recognition.maxAlternatives = 3; // More alternatives = better accuracy across languages
+      // hi-IN picks up Hindi, Hinglish, and Indian English naturally
+      // For Marathi speakers it also partially understands Devnagari
+      this.recognition.lang = "hi-IN";
 
       this.recognition.onstart = () => {
         this.isListening = true;
