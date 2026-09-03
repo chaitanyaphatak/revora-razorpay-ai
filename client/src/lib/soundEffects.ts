@@ -1,12 +1,24 @@
 /**
- * ReVora Web Audio Synthesizer for Real-Time Merchant Notifications.
+ * ReVora Web Audio Synthesizer & Cloudinary Audio Player for Real-Time Notifications.
  *
- * Synthesizes a crisp, premium "Cash Chime / Payment Recovered Ding"
- * directly using the Web Audio API without needing external .mp3 assets,
- * ensuring zero network lag, zero 404s, and instant playback across all browsers.
+ * Plays customer audio notification from Cloudinary CDN with local asset and Web Audio fallbacks.
  */
 
+const CLOUDINARY_CUSTOMER_AUDIO_URL = "https://res.cloudinary.com/dyqto9hz/video/upload/v1788461780/customer-notification.mp3";
+const LOCAL_CUSTOMER_AUDIO_URL = "/assets/customer-notification.mp3";
+
 let audioCtx: AudioContext | null = null;
+let preloadedCustomerAudio: HTMLAudioElement | null = null;
+
+// Preload the Cloudinary customer audio on client init for instant playback
+if (typeof window !== "undefined") {
+  try {
+    preloadedCustomerAudio = new Audio(CLOUDINARY_CUSTOMER_AUDIO_URL);
+    preloadedCustomerAudio.preload = "auto";
+  } catch (e) {
+    // ignore
+  }
+}
 
 function getAudioContext(): AudioContext | null {
   if (typeof window === "undefined") return null;
@@ -23,9 +35,7 @@ function getAudioContext(): AudioContext | null {
 }
 
 /**
- * Plays a celebratory, premium "Cash Register / Success Ding" chime.
- * Chords: G5 (784Hz) -> C6 (1046.5Hz) -> E6 (1318.5Hz) -> G6 (1568Hz)
- * with a shimmering metallic harmonic tail.
+ * Plays a celebratory, premium "Cash Register / Success Ding" chime on merchant screen.
  */
 export function playPaymentRecoveredSound(): void {
   try {
@@ -44,18 +54,16 @@ export function playPaymentRecoveredSound(): void {
       { freq: 1046.5, start: 0.08, dur: 0.55, gain: 0.32 },  // C6
       { freq: 1318.51, start: 0.16, dur: 0.65, gain: 0.35 }, // E6
       { freq: 1567.98, start: 0.24, dur: 0.85, gain: 0.4 },  // G6
-      { freq: 2093.0, start: 0.32, dur: 0.95, gain: 0.25 },  // C7 (crystal shimmer)
+      { freq: 2093.0, start: 0.32, dur: 0.95, gain: 0.25 },  // C7
     ];
 
     notes.forEach((note) => {
       const osc = ctx.createOscillator();
       const gainNode = ctx.createGain();
 
-      // Sine wave with slight triangle overtone for metallic chime warmth
       osc.type = "sine";
       osc.frequency.setValueAtTime(note.freq, now + note.start);
 
-      // Attack and exponential decay envelope
       gainNode.gain.setValueAtTime(0.0001, now + note.start);
       gainNode.gain.exponentialRampToValueAtTime(note.gain, now + note.start + 0.02);
       gainNode.gain.exponentialRampToValueAtTime(0.0001, now + note.start + note.dur);
@@ -67,7 +75,33 @@ export function playPaymentRecoveredSound(): void {
       osc.stop(now + note.start + note.dur + 0.05);
     });
   } catch (err) {
-    // Graceful fallback — never crash the UI if audio playback is blocked by browser policy
     console.debug("[ReVora Audio] Sound playback skipped:", err);
+  }
+}
+
+/**
+ * Plays the customer notification sound from Cloudinary CDN on the customer's phone
+ * when their Razorpay payment is verified and completed.
+ */
+export function playCustomerNotificationSound(): void {
+  try {
+    const audio = preloadedCustomerAudio || new Audio(CLOUDINARY_CUSTOMER_AUDIO_URL);
+    audio.volume = 1.0;
+    audio.currentTime = 0;
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        // Fallback 1: Local MP3
+        try {
+          const fallbackAudio = new Audio(LOCAL_CUSTOMER_AUDIO_URL);
+          fallbackAudio.play().catch(() => playPaymentRecoveredSound());
+        } catch {
+          playPaymentRecoveredSound();
+        }
+      });
+    }
+  } catch (err) {
+    console.debug("[CustomerAudio] Audio error fallback:", err);
+    playPaymentRecoveredSound();
   }
 }

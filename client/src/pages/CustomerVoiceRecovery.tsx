@@ -24,6 +24,7 @@ import {
   VolumeX,
 } from "lucide-react";
 import { toast } from "sonner";
+import { playCustomerNotificationSound } from "@/lib/soundEffects";
 
 const currency = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 
@@ -102,6 +103,8 @@ export default function CustomerVoiceRecovery() {
         amount: data.session.recoveredAmount,
       });
       setVoiceState("completed");
+      // Play customer celebration sound on phone
+      playCustomerNotificationSound();
       toast.success("Payment verified & completed via Razorpay!", {
         description: `Payment ID: ${paymentRef}`,
       });

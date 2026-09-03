@@ -1,9 +1,19 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "wouter";
 import { ArrowLeft, ArrowRight, Bot, Cpu, Database, ExternalLink, Flame, Gauge, Github, Layers, Lock, ShieldCheck, Sparkles, Terminal, Volume2, Zap } from "lucide-react";
 import { ThreeRecoveryFooterCanvas } from "@/components/ThreeRecoveryFooterCanvas";
+import { trpc } from "@/lib/trpc";
 
 export default function LandingPage() {
+  const utils = trpc.useUtils();
+
+  // Instant Warmup: Pre-fetch overview data in background so clicking "Launch AI" or "Overview" renders instantly
+  useEffect(() => {
+    void utils.recovery.dashboard.prefetch({ range: "30D" });
+    void utils.recovery.voice.analytics.prefetch();
+    void utils.recovery.voice.listDemoCustomers.prefetch();
+  }, [utils]);
+
   return (
     <div className="min-h-screen w-full bg-black flex flex-col justify-between p-4 sm:p-8 lg:px-16 lg:py-10 font-sans selection:bg-[#ff409f] selection:text-white relative overflow-x-hidden">
       {/* Background Video — Local Asset, GPU Accelerated, Instant Load */}

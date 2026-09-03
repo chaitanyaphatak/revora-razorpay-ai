@@ -64,7 +64,7 @@ export function EmailPreviewModal({
             </span>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-widest text-teal-300">
-                {isLiveEmail ? "✓ Real Email Dispatched via Resend" : "Email Preview"}
+                {isLiveEmail ? "✓ Real Email Dispatched via E-mail" : "Email Preview"}
               </p>
               <DialogTitle className="text-base font-semibold text-white">
                 Recovery Email Sent to Customer
@@ -126,7 +126,7 @@ export function EmailPreviewModal({
             </p>
             <div className="border-t border-slate-100 pt-3 flex items-center gap-2 text-[11px] text-slate-400">
               <ShieldCheck className="h-3.5 w-3.5 text-teal-600" />
-              <span>Powered by ReVora Recovery Engine via Resend</span>
+              <span>Powered by ReVora Recovery Engine</span>
             </div>
           </div>
 

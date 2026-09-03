@@ -75,62 +75,92 @@ Zero credentials stored. Powered by ReVora AI Revenue Recovery.`;
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${subject}</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 0; }
-    .container { max-width: 580px; margin: 24px auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .header { background: linear-gradient(135deg, #0f766e, #0f9488); padding: 28px 24px; text-align: center; color: #ffffff; }
-    .header h1 { margin: 8px 0 0 0; font-size: 22px; font-weight: 700; }
-    .content { padding: 28px 24px; font-size: 15px; line-height: 1.65; color: #334155; }
-    .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; margin: 20px 0; }
-    .row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px; }
-    .row.total { margin-top: 8px; padding-top: 10px; border-top: 1px dashed #cbd5e1; font-size: 16px; font-weight: 700; }
-    .cta-container { margin: 24px 0 16px 0; text-align: center; }
-    .cta-button { display: inline-block; width: 85%; max-width: 420px; background: #0f766e; color: #ffffff !important; text-align: center; padding: 14px 20px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 15px; box-shadow: 0 4px 12px rgba(15,118,110,0.25); }
-    .secondary-link { text-align: center; font-size: 13px; margin-top: 12px; }
-    .secondary-link a { color: #0f766e; text-decoration: underline; font-weight: 600; }
-    .footer { background: #f1f5f9; padding: 16px 24px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; color: #0f172a; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+    .wrapper { width: 100%; background-color: #f1f5f9; padding: 32px 12px; }
+    .container { max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 20px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03); }
+    .header { background: #090d16; padding: 32px 28px 26px 28px; text-align: left; color: #ffffff; position: relative; }
+    .header-badge { display: inline-block; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: #34d399; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 4px 10px; border-radius: 20px; margin-bottom: 12px; }
+    .header h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; color: #ffffff; line-height: 1.25; }
+    .header-sub { font-size: 13px; color: #94a3b8; margin-top: 6px; }
+    .content { padding: 32px 28px; font-size: 15px; line-height: 1.6; color: #334155; }
+    .greeting { font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 12px; }
+    .reason-box { background: #fff1f2; border: 1px solid #ffe4e6; border-left: 4px solid #f43f5e; border-radius: 10px; padding: 12px 16px; margin: 20px 0; font-size: 13px; color: #9f1239; line-height: 1.5; }
+    .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; margin: 24px 0; }
+    .card-title { font-size: 11px; color: #64748b; margin-bottom: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
+    .row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; color: #475569; }
+    .row strong { color: #0f172a; }
+    .row.total { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #cbd5e1; font-size: 18px; font-weight: 800; color: #0f172a; }
+    .row.total .amount { color: #059669; }
+    .cta-container { margin: 30px 0 20px 0; text-align: center; }
+    .cta-button { display: inline-block; width: 100%; max-width: 440px; box-sizing: border-box; background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%); color: #ffffff !important; text-align: center; padding: 16px 24px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 16px; letter-spacing: -0.2px; box-shadow: 0 10px 20px -5px rgba(13, 148, 136, 0.35); }
+    .secondary-container { text-align: center; margin-top: 14px; }
+    .secondary-link { color: #0f766e; text-decoration: none; font-size: 13px; font-weight: 600; }
+    .secondary-link:hover { text-decoration: underline; }
+    .trust-pill { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 8px 12px; font-size: 11px; color: #166534; text-align: center; margin-top: 24px; }
+    .footer { background: #f8fafc; padding: 20px 28px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0; line-height: 1.6; }
+    .footer strong { color: #334155; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #99f6e4;">Payment Recovery</div>
-      <h1>${options.merchantName}</h1>
-    </div>
-    <div class="content">
-      <p>Namaste <strong>${options.recipientName}</strong>,</p>
-      <p>Your recent payment of <strong>${formattedAmount}</strong> to <strong>${options.merchantName}</strong> was not completed (${options.failureReason.replace(/_/g, " ")}).</p>
-
-      <div class="card">
-        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Invoice Summary</div>
-        <div class="row"><span>Merchant</span><span><strong>${options.merchantName}</strong></span></div>
-        <div class="row"><span>Status</span><span style="color:#e11d48; font-weight:600;">Payment Incomplete</span></div>
-        <div class="row"><span>Reason</span><span style="color:#9333ea;">${options.failureReason.replace(/_/g, " ")}</span></div>
-        <div class="row total"><span>Amount Due</span><span style="color:#0f766e;">${formattedAmount}</span></div>
+  <div class="wrapper">
+    <div class="container">
+      <!-- Top Brand Header -->
+      <div class="header">
+        <span class="header-badge">⚡ Instant AI Recovery</span>
+        <h1>Payment Incomplete</h1>
+        <div class="header-sub">Order via <strong>${options.merchantName}</strong> · Ref #${options.sessionId.slice(-8).toUpperCase()}</div>
       </div>
 
-      <p style="font-size: 14px; color: #475569; text-align: center; margin-top: 20px;">
-        To resolve this easily in Hinglish or English, click the button below to talk to our AI Assistant:
-      </p>
+      <!-- Main Body -->
+      <div class="content">
+        <div class="greeting">Namaste ${options.recipientName},</div>
+        <p style="margin: 0 0 14px 0;">
+          Your recent checkout of <strong>${formattedAmount}</strong> on <strong>${options.merchantName}</strong> could not be processed by your bank.
+        </p>
 
-      <div class="cta-container">
-        <a href="${fullRecoveryUrl}" class="cta-button" style="background-color: #0f766e; color: #ffffff !important; text-decoration: none; padding: 14px 24px; border-radius: 10px; font-weight: 700; font-size: 15px; display: inline-block;">
-          🎙️ Talk to AI Assistant (Hinglish Voice)
-        </a>
+        <!-- Failure Reason Alert Box -->
+        <div class="reason-box">
+          <strong>Why it failed:</strong> ${options.failureReason.replace(/_/g, " ")}. No funds were deducted from your account.
+        </div>
+
+        <!-- Order Summary Breakdown Card -->
+        <div class="card">
+          <div class="card-title">Transaction Details</div>
+          <div class="row"><span>Merchant</span><strong>${options.merchantName}</strong></div>
+          <div class="row"><span>Customer Name</span><strong>${options.recipientName}</strong></div>
+          <div class="row"><span>Gateway Status</span><span style="color: #e11d48; font-weight: 700;">Pending Retry</span></div>
+          <div class="row total"><span>Amount Due</span><span class="amount">${formattedAmount}</span></div>
+        </div>
+
+        <p style="font-size: 14px; color: #475569; text-align: center; margin: 24px 0 16px 0;">
+          Speak directly with <strong>ReVora Sahayak™</strong> in Hinglish or English to resolve this in under 2 minutes:
+        </p>
+
+        <!-- Primary Voice AI CTA Button -->
+        <div class="cta-container">
+          <a href="${fullRecoveryUrl}" class="cta-button" target="_blank">
+            🎙️ Talk to AI Assistant (Hinglish Voice)
+          </a>
+        </div>
+
+        <!-- Secondary Direct Checkout Link -->
+        <div class="secondary-container">
+          <a href="${fullDirectPayUrl}" class="secondary-link" target="_blank">
+            💳 Or Pay Directly via Razorpay Standard Checkout &rarr;
+          </a>
+        </div>
+
+        <!-- Trust & Safety Pill -->
+        <div class="trust-pill">
+          🔒 <strong>256-Bit Bank Encryption:</strong> Official Razorpay gateway. We will never ask for your UPI PIN, OTP, or CVV.
+        </div>
       </div>
 
-      <div class="secondary-link" style="text-align: center; margin-top: 14px;">
-        <a href="${fullDirectPayUrl}" style="color: #0f766e; text-decoration: underline; font-size: 13px; font-weight: 600;">
-          Or Pay Directly via Secure Checkout &rarr;
-        </a>
+      <!-- Footer -->
+      <div class="footer">
+        Powered by <strong>ReVora — Revenue Operations & AI Recovery</strong>.<br>
+        Sent securely on behalf of <strong>${options.merchantName}</strong>. If you already completed this payment, you can safely disregard this email.
       </div>
-
-      <p style="font-size: 12px; color: #94a3b8; text-align: center; margin-top: 22px;">
-        Already completed this payment? You can safely ignore this email.
-      </p>
-    </div>
-    <div class="footer">
-      🔒 <strong>ReVora Security:</strong> We will never ask for your PIN, OTP, or CVV.<br>
-      Sent on behalf of <strong>${options.merchantName}</strong> via ReVora AI Revenue Recovery.
     </div>
   </div>
 </body>

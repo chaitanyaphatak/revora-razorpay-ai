@@ -80,7 +80,7 @@ export function RiskWorkspace() {
     onSuccess: (res) => {
       setEmailPreviewData(res.emailPreview);
       setEmailModalOpen(true);
-      toast.success("Voice recovery email dispatched via Resend", {
+      toast.success("Voice recovery email dispatched via E-mail", {
         description: `Sent to ${res.emailPreview.recipientEmail}`,
       });
       void refetch();
