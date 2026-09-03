@@ -113,6 +113,21 @@ export async function processGeminiVoiceTurn(
   const failureExp = failureExplanations[session.failureReason] ??
     `payment ek technical issue ki wajah se fail hui thi — aapka koi paisa account se nahi cut hua`;
 
+  // Marathi failure explanations
+  const marathiFailureExplanations: Record<string, string> = {
+    upi_timeout: "तुमचा UPI व्यवहार बँक सर्व्हर टाइमआउटमुळे पूर्ण झाला नाही — खात्यातून कोणतेही पैसे कट झाले नाहीत",
+    bank_server_down: "बँकेचा सर्व्हर तांत्रिक समस्येमुळे काही क्षणांसाठी डाऊन होता — यात तुमची कोणतीही चूक नाही",
+    insufficient_funds: "पेमेंटच्या वेळी खात्यात शिल्लक रक्कम कमी असल्यामुळे व्यवहार पूर्ण झाला नाही",
+    network_drop: "OTP पडताळणीपूर्वी नेटवर्क डिस्कनेक्ट झाल्यामुळे पेमेंट सत्र संपले",
+    daily_limit_exceeded: "आजची UPI मर्यादा संपली होती — तुम्ही कार्ड किंवा नेटबँकिंगने सहज भरू शकता",
+    upi_pin_retry_limit: "चुकीचा UPI PIN टाकल्यामुळे तात्पुरता ब्लॉक झाला होता — आता नवीन लिंकवर अडचण येणार नाही",
+    card_security_block: "बँकेने सुरक्षेसाठी पेमेंट तात्पुरते ब्लॉक केले होते — हे तुमच्या संरक्षणासाठी होते",
+    gateway_timeout: "पेमेंट गेटवेने चेकआउट दरम्यान नेटवर्क टाइमआउट आढळला — हे सर्व्हर-साइड समस्या होती",
+    card_expired: "तुमचे कार्ड एक्सपायर झाले आहे — तुम्ही नवीन कार्ड किंवा UPI ने सहज पे करू शकता",
+    session_expired: "सत्र निष्क्रिय राहिल्यामुळे पेमेंट पूर्ण झाले नाही",
+    otp_timed_out: "OTP वितरणात विलंब झाला आणि OTP एक्सपायर झाला",
+  };
+
   // Check last conversation state
   const lastTurns = session.transcript.filter((t) => t.role !== "system");
   const lastAssistantTurn = [...lastTurns].reverse().find((t) => t.role === "assistant");
@@ -132,6 +147,14 @@ export async function processGeminiVoiceTurn(
   const rawInput = userInput.trim();
   const input = rawInput.toLowerCase();
 
+  const isMarathiInput =
+    input.includes("का") || input.includes("झाला") || input.includes("झाली") ||
+    input.includes("करायचं") || input.includes("सांगा") || input.includes("पैसे") ||
+    input.includes("कसं") || input.includes("नको") || input.includes("नाही") ||
+    input.includes("kashamule") || input.includes("karaycha") || input.includes("zhala") ||
+    rawInput.includes("का") || rawInput.includes("काय झालं") || rawInput.includes("करायचं");
+
+
   // FAST PATH 1: Customer asking WHY payment failed (Instant <10ms response)
   const isAskingFailureReason =
     input.includes("kyun") || input.includes("kyu") || input.includes("why") ||
@@ -139,9 +162,19 @@ export async function processGeminiVoiceTurn(
     input.includes("reason") || input.includes("wajah") || input.includes("problem") || input.includes("issue") ||
     input.includes("paise") || input.includes("paisa") ||
     rawInput.includes("क्यों") || rawInput.includes("क्यो") || rawInput.includes("फेल") ||
-    rawInput.includes("क्या हुआ") || rawInput.includes("कारण") || rawInput.includes("वजह") || rawInput.includes("दिक्कत");
+    rawInput.includes("क्या हुआ") || rawInput.includes("कारण") || rawInput.includes("वजह") || rawInput.includes("दिक्कत") ||
+    rawInput.includes("का") || rawInput.includes("कशा मुळे") || rawInput.includes("काय झालं") || rawInput.includes("पैसे कटले");
 
   if (isAskingFailureReason) {
+    if (isMarathiInput) {
+      const marathiExp = marathiFailureExplanations[session.failureReason] ?? "पेमेंट तांत्रिक समस्येमुळे पूर्ण झाले नाही — खात्यातून पैसे कट झाले नाहीत";
+      return {
+        replyText: `${session.customerName} जी, ${marathiExp}. खात्यातून पैसे कट झाले नाहीत. मी सुरक्षित पेमेंट गेटवे आता उघडू का?`,
+        intent: "ASK_FAILURE_REASON",
+        action: "OFFER_PAYMENT",
+        actionPayload: { suggestedPaymentMethod: "card_or_upi" },
+      };
+    }
     return {
       replyText: `${session.customerName} ji, ${failureExp}. Aapka koi paisa account se nahi gaya. Kya main payment screen abhi open karun?`,
       intent: "ASK_FAILURE_REASON",
@@ -157,9 +190,11 @@ export async function processGeminiVoiceTurn(
     input === "okay" || input === "sure" || input === "karo" || input === "kardo" ||
     input === "kar do" || input === "chalo" || input === "sahi hai" || input === "bhejo" ||
     input === "open" || input === "kholo" || input === "khol do" || input === "open karo" ||
+    input === "ho" || input === "hoy" || input === "kara" || input === "karto" ||
     rawInput.includes("हाँ") || rawInput.includes("हां") || rawInput.includes("हा") ||
     rawInput.includes("ठीक है") || rawInput.includes("चलो") || rawInput.includes("ओके") ||
-    rawInput.includes("करो") || rawInput.includes("कर दो") || rawInput.includes("भेजो");
+    rawInput.includes("करो") || rawInput.includes("कर दो") || rawInput.includes("भेजो") ||
+    rawInput.includes("हो") || rawInput.includes("होय") || rawInput.includes("करा") || rawInput.includes("उघडा");
 
   const hasPaymentOpenKeywords =
     input.includes("open") || input.includes("kholo") || input.includes("khol") ||
@@ -173,13 +208,24 @@ export async function processGeminiVoiceTurn(
     input.includes("try karo") || input.includes("try karna") ||
     input.includes("retry") || input.includes("dobara") || input.includes("phir se") ||
     input.includes("razorpay") || input.includes("upi se") || input.includes("card se") ||
+    input.includes("pay karaycha") || input.includes("pay karto") || input.includes("ugadha") ||
     rawInput.includes("पेमेंट पेज") || rawInput.includes("पेज ओपन") || rawInput.includes("ओपन करो") ||
     rawInput.includes("खोलो") || rawInput.includes("खोल दो") || rawInput.includes("लिंक भेजो") ||
     rawInput.includes("गेटवे") || rawInput.includes("चेकआउट") || rawInput.includes("ट्राई") ||
     rawInput.includes("दोबारा") || rawInput.includes("पे करना") || rawInput.includes("पे करू") ||
-    rawInput.includes("पे करूँगा") || rawInput.includes("रेज़रपे");
+    rawInput.includes("पे करूँगा") || rawInput.includes("रेज़रपे") || rawInput.includes("पेमेंट करायचं") ||
+    rawInput.includes("उघडा") || rawInput.includes("लिंक द्या");
 
   if ((hadOfferedPayment && isPaymentAffirmative) || hasPaymentOpenKeywords) {
+    if (isMarathiInput || rawInput.includes("हो") || rawInput.includes("करायचं") || rawInput.includes("करा")) {
+      return {
+        replyText: `नक्कीच ${session.customerName} जी! मी तुमच्यासाठी सुरक्षित Razorpay पेमेंट गेटवे उघडत आहे — तुम्ही UPI, Card किंवा Netbanking ने ₹${session.amount.toLocaleString("en-IN")} लगेच पूर्ण करू शकता.`,
+        intent: "RETRY_PAYMENT",
+        action: "OPEN_PAYMENT_GATEWAY",
+        openGateway: true,
+        actionPayload: { suggestedPaymentMethod: "card_or_upi" },
+      };
+    }
     return {
       replyText: `Bilkul ${session.customerName} ji! Main abhi aapke liye secure payment gateway open kar raha hoon — aap UPI, Card ya Netbanking se ₹${session.amount.toLocaleString("en-IN")} safely complete kar sakte hain.`,
       intent: "RETRY_PAYMENT",
