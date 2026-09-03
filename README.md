@@ -1,28 +1,30 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/ReVora-Revenue%20Operations%20%26%20AI%20Recovery-0f9488?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyek0xMSAxN3YtNkg5bDMtNCAzIDRoLTJ2NmgtMnoiLz48L3N2Zz4=" alt="ReVora" />
-
-# ReVora — Revenue Operations & AI Recovery
+# ⚡ ReVora — Revenue Operations & AI Recovery
 
 ### 🏆 Built for Razorpay AI Hackathon 2025
 
 **India's first Hinglish Voice AI agent that recovers failed payments in real-time.**  
-When a customer's payment fails, ReVora's AI calls them in their language — Hinglish — negotiates, and recovers the revenue automatically.
+When a customer's payment fails, ReVora's AI agent initiates a natural Hinglish conversation, addresses doubts, negotiates alternatives, and recovers revenue automatically.
 
-[![Live Demo](https://img.shields.io/badge/🚀%20Live%20Demo-revora--razorpay--ai.vercel.app-0f9488?style=for-the-badge)](https://revora-razorpay-ai.vercel.app/)
-[![Backend](https://img.shields.io/badge/🔧%20Backend-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://revora-backend-8mp1.onrender.com/api/health)
-[![Built with Razorpay](https://img.shields.io/badge/Powered%20by-Razorpay-3395FF?style=for-the-badge&logo=razorpay&logoColor=white)](https://razorpay.com)
+<br />
 
----
+[![Live Demo](https://img.shields.io/badge/🚀%20Live%20Frontend-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://revora-razorpay-ai.vercel.app/)
+[![Backend](https://img.shields.io/badge/🔧%20Live%20Backend-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://revora-backend-8mp1.onrender.com/api/health)
+[![Powered by Razorpay](https://img.shields.io/badge/Powered%20by-Razorpay-0C2340?style=for-the-badge&logo=razorpay&logoColor=3395FF)](https://razorpay.com)
 
-[![React](https://img.shields.io/badge/React_19-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
+<br />
+
+[![React](https://img.shields.io/badge/React%2019-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![Node.js](https://img.shields.io/badge/Node.js_22-339933?style=flat-square&logo=nodedotjs&logoColor=white)](https://nodejs.org)
-[![Google Gemini](https://img.shields.io/badge/Google_Gemini_2.0_Flash-4285F4?style=flat-square&logo=google&logoColor=white)](https://deepmind.google/technologies/gemini)
+[![Node.js](https://img.shields.io/badge/Node.js%2022-5FA04E?style=flat-square&logo=nodedotjs&logoColor=white)](https://nodejs.org)
+[![Google Gemini](https://img.shields.io/badge/Google%20Gemini%202.0%20Flash-8E75B2?style=flat-square&logo=googlegemini&logoColor=white)](https://deepmind.google/technologies/gemini)
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com)
-[![Vite](https://img.shields.io/badge/Vite_7-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev)
-[![tRPC](https://img.shields.io/badge/tRPC_11-2596BE?style=flat-square&logo=trpc&logoColor=white)](https://trpc.io)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org)
+[![tRPC](https://img.shields.io/badge/tRPC%20v11-2596BE?style=flat-square&logo=trpc&logoColor=white)](https://trpc.io)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS%20v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Vite](https://img.shields.io/badge/Vite%207-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev)
+[![Express](https://img.shields.io/badge/Express-000000?style=flat-square&logo=express&logoColor=white)](https://expressjs.com)
 
 </div>
 
@@ -30,354 +32,242 @@ When a customer's payment fails, ReVora's AI calls them in their language — Hi
 
 ## 🎯 The Problem
 
-India loses **₹1,50,000 crore+** every year to failed payments. When a payment fails:
+India loses **₹1,50,000 crore+** every year to failed digital transactions and checkout drop-offs:
 
-- 📉 Merchants lose revenue silently
-- 😤 Customers get frustrated and forget to retry
-- 📧 Generic email reminders are ignored (< 5% open rate)
-- 🕐 Manual follow-up is expensive and time-consuming
+- 📉 **Silent Revenue Leakage:** 15–30% of attempted payments fail due to server timeouts, UPI limits, or card declines.
+- 😤 **Customer Friction:** Frustrated buyers rarely return on their own.
+- 📧 **Ineffective Recovery:** Generic email and SMS reminders suffer from sub-5% conversion rates.
+- 🕐 **Manual Burden:** Human support teams cannot reach out within the critical 5-minute recovery window.
 
-**ReVora solves this with an AI agent that speaks the customer's language.**
+**ReVora solves this with an intelligent, voice-first AI agent that speaks the customer's language.**
 
 ---
 
 ## ✨ What ReVora Does
 
-> **🎙️ ReVora sends a personalized Hinglish voice link to the customer. When they open it, an AI agent explains why their payment failed, addresses their concerns in natural Hinglish conversation, and guides them to retry payment — all in under 2 minutes.**
+> **🎙️ When a transaction fails, ReVora sends an interactive Hinglish voice recovery link. The AI agent immediately greets the customer, explains the exact failure reason in friendly Hinglish, addresses hesitation, and opens an in-call Razorpay checkout to complete payment in under 2 minutes.**
 
-| Without ReVora | With ReVora |
+| Traditional Recovery | ReVora AI Recovery |
 |---|---|
-| Failed payment → Lost revenue | Failed payment → AI agent engages customer |
-| Generic SMS/email ignored | Personalized Hinglish conversation |
-| Manual support team needed | Fully automated 24/7 recovery |
-| 5-15% recovery rate | 60-85% recovery rate (demo) |
-| Days to follow up | Real-time (within minutes) |
+| ❌ Failed payment → Lost revenue | ✅ Instant AI outreach within seconds |
+| ❌ Static emails with <5% conversion | ✅ Interactive Hinglish voice conversation |
+| ❌ Manual support escalation | ✅ 24/7 automated intelligent resolution |
+| ❌ 5–15% average recovery rate | ✅ 60–85% target recovery rate |
+| ❌ Hours/days delay | ✅ Sub-2-minute complete payment recovery |
 
 ---
 
 ## 🌟 Key Features
 
 ### 🎙️ Hinglish Voice AI Recovery Agent
-- **Natural language understanding** in Hindi-English (Hinglish) using Google Gemini 2.0 Flash
-- Customer says _"Mera payment kyu fail hua?"_ → AI explains in detail
-- Customer says _"Ha, retry karna hai"_ → Razorpay checkout opens instantly
-- **Sub-second responses** with deterministic fast-path matching for common intents (<10ms)
-- Works on **any mobile browser** — no app download required
+- **Natural Language Understanding:** Powered by Google Gemini 2.0 Flash for fluid Hindi-English (Hinglish) conversations.
+- **Context-Aware Reasoning:** Explains exact failure reasons (e.g., *"Aapka HDFC bank server response timeout hua tha"*).
+- **Sub-Second Latency:** Deterministic fast-path caching (<10ms) for high-frequency user intents.
+- **Cross-Platform Mobile Web:** Web Speech API integration with zero app downloads required.
 
-### 💳 Razorpay Test Mode Integration
-- Real Razorpay checkout flow embedded in customer recovery page
-- Complete payment verification with signature validation
-- Supports UPI, Cards, Net Banking, Wallets
+### 💳 Deep Razorpay Test Mode Integration
+- Embedded Razorpay standard checkout overlay directly within the voice recovery session.
+- Server-side cryptographic signature verification (`razorpay_signature`).
+- Full support for UPI, Cards, Net Banking, and Wallets in sandbox mode.
 
-### 📊 Merchant Operations Dashboard
-- Live recovery analytics — revenue at risk, recovery rate, funnel visualization
-- Real-time notifications via **Server-Sent Events (SSE)** — works across devices
-- Bell notification + toast alert when any customer completes payment (from any device)
-- Auto-refreshing charts without page reload
-
-### 📧 Smart Recovery Emails
-- Personalized recovery emails with customer-specific failure reasons
-- Dynamic CTA buttons linking directly to the voice recovery session
-- Production-ready email templates
+### 📊 Merchant Operations & Analytics Center
+- Real-time **Server-Sent Events (SSE)** push notifications across separate devices and browsers.
+- Dynamic recovery funnel analytics, revenue-at-risk tracking, and audit logs.
+- Zero-refresh metric updates when a customer completes payment anywhere in the world.
 
 ### 🔄 Hackathon Demo Mode
-- Payments auto-reset to "failed" after 10 minutes → instant re-demo capability
-- No server restart needed between demos
+- **Automatic 10-Minute Reset:** Recovered demo payments automatically revert to failed state after 10 minutes, allowing seamless repeated live judging presentations without server restarts.
 
-### 🔒 Security & Safety
-- All Supabase + Gemini credentials are server-only secrets
-- Browser never receives API keys
-- Simulation-safe: cannot affect real payment gateway data
+### 🔒 Enterprise Security & Policy Gates
+- Deterministic policy engine enforces retry limits, cooling periods, and max-value thresholds.
+- Supabase and Gemini credentials remain strictly isolated on the server.
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Architecture & Deployment Flow
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    VERCEL (Frontend CDN)                    │
-│  React 19 + TypeScript + Tailwind CSS + Recharts + tRPC    │
-│  revora-razorpay-ai.vercel.app                             │
+│                    VERCEL (Frontend Host)                   │
+│  React 19 • TypeScript • Tailwind CSS v4 • Vite 7           │
+│  🔗 https://revora-razorpay-ai.vercel.app                  │
 └──────────────────────┬──────────────────────────────────────┘
-                       │ /api/* reverse proxy
+                       │ /api/* reverse proxy rewrites
                        ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                   RENDER (Backend API)                      │
-│  Node.js 22 + Express + tRPC + SSE                        │
-│  revora-backend-8mp1.onrender.com                          │
+│                   RENDER (Backend API Service)              │
+│  Node.js 22 • Express • tRPC v11 • SSE Push Broadcaster     │
+│  🔗 https://revora-backend-8mp1.onrender.com                │
 │                                                             │
-│  ┌─────────────┐  ┌──────────────┐  ┌───────────────────┐ │
-│  │ Voice AI    │  │  Recovery    │  │  SSE Emitter      │ │
-│  │ Gemini 2.0  │  │  Engine      │  │  (cross-device    │ │
-│  │ Flash       │  │  (Policy +   │  │   notifications)  │ │
-│  │             │  │   Scoring)   │  │                   │ │
-│  └──────┬──────┘  └──────────────┘  └───────────────────┘ │
-└─────────┼───────────────────────────────────────────────────┘
-          │
-    ┌─────▼──────┐     ┌────────────────┐
-    │  Google    │     │   Supabase     │
-    │  Gemini    │     │  PostgreSQL    │
-    │  2.0 Flash │     │  (Payments,    │
-    │  API       │     │   Audit Logs)  │
-    └────────────┘     └────────────────┘
-```
-
-### Real-Time Cross-Device Notification Flow
-```
-Customer (mobile) → Razorpay Payment → Backend verifies
-       ↓
-broadcastSSEEvent("payment_recovered")
-       ↓
-ALL connected merchant dashboards receive push notification
-       ↓
-🎉 Toast + Bell notification (no page refresh needed)
+│  ┌─────────────────┐ ┌───────────────────┐ ┌──────────────┐│
+│  │ Gemini 2.0      │ │ Policy & Scoring  │ │ SSE Emitter  ││
+│  │ Voice AI Agent  │ │ Decision Engine   │ │ (Cross-Dev)  ││
+│  └────────┬────────┘ └───────────────────┘ └──────┬───────┘│
+└───────────┼───────────────────────────────────────┼─────────┘
+            │                                       │
+      ┌─────▼──────┐                          ┌─────▼──────┐
+      │   Google   │                          │  Merchant  │
+      │ Gemini 2.0 │                          │ Dashboard  │
+      │ Flash API  │                          │ Real-time  │
+      └────────────┘                          └────────────┘
 ```
 
 ---
 
-## 🚀 Live Demo
+## 🚀 Live Demo & Testing
 
-| | Link |
-|---|---|
-| 🌐 **Merchant Dashboard** | [revora-razorpay-ai.vercel.app](https://revora-razorpay-ai.vercel.app/) |
-| 🔧 **Backend Health** | [revora-backend-8mp1.onrender.com/api/health](https://revora-backend-8mp1.onrender.com/api/health) |
+| Service | Endpoint / Link | Status |
+|---|---|---|
+| 🌐 **Merchant Dashboard** | [revora-razorpay-ai.vercel.app](https://revora-razorpay-ai.vercel.app/) | ![Vercel](https://img.shields.io/badge/Vercel-Live-000000?style=flat-square&logo=vercel&logoColor=white) |
+| 🔧 **Backend API** | [revora-backend-8mp1.onrender.com/api/health](https://revora-backend-8mp1.onrender.com/api/health) | ![Render](https://img.shields.io/badge/Render-Active-46E3B7?style=flat-square&logo=render&logoColor=white) |
 
-### Demo Walkthrough
+### 🎬 Live Demo Walkthrough
 
-1. **Open Merchant Dashboard** → [revora-razorpay-ai.vercel.app](https://revora-razorpay-ai.vercel.app/)
-2. Go to **AI Agents** → Select a failed payment → Click **"Send Voice Recovery"**
-3. Copy the recovery link → Open on your **mobile phone**
-4. Talk to the Hinglish AI agent — say _"payment kyu fail hua?"_
-5. Say _"ha, retry karna hai"_ → Complete Razorpay Test Mode payment
-6. Watch the **merchant dashboard** get notified in real-time (no refresh!) 🎉
-7. After 10 minutes → payment auto-resets for the next demo
-
-**Test Card for Razorpay:** `4111 1111 1111 1111` | Expiry: any future date | CVV: any 3 digits
-
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technology |
-|---|---|
-| **Frontend** | React 19, TypeScript, Tailwind CSS v4, Vite 7 |
-| **UI Components** | Radix UI, shadcn/ui, Lucide Icons, Recharts |
-| **Backend** | Node.js 22, Express 4, TypeScript |
-| **API Layer** | tRPC v11 (end-to-end type-safe) |
-| **AI Engine** | Google Gemini 2.0 Flash |
-| **Voice** | Web Speech API (SpeechRecognition + SpeechSynthesis) |
-| **Payments** | Razorpay Test Mode (Orders + Checkout + Signature Verify) |
-| **Database** | Supabase (PostgreSQL) |
-| **Real-time** | Server-Sent Events (SSE) |
-| **State** | TanStack Query v5 |
-| **Routing** | Wouter |
-| **Validation** | Zod v4 |
-| **Frontend Deploy** | Vercel |
-| **Backend Deploy** | Render |
-| **Package Manager** | pnpm |
+1. Open the **Merchant Dashboard** on your laptop: [revora-razorpay-ai.vercel.app](https://revora-razorpay-ai.vercel.app/)
+2. Navigate to **AI Agents** → Select any failed payment → Click **"Send Voice Recovery"**.
+3. Copy the recovery link and open it on your **mobile phone** (or a separate browser window).
+4. Tap **"Start Voice Recovery"** and speak in Hinglish:
+   - *"Payment kyu fail hua?"* → AI explains the exact gateway failure reason.
+   - *"Ha, abhi pay karna hai"* → AI opens the Razorpay checkout overlay.
+5. Complete payment using Razorpay Test Mode (`Card: 4111 1111 1111 1111` | any valid date & CVV).
+6. **Watch your laptop screen:** The merchant dashboard instantly receives a real-time SSE notification, pulses the bell icon, displays a toast, and updates metrics without refreshing!
+7. After 10 minutes, the session automatically resets to "failed" for your next demo.
 
 ---
 
-## 📁 Project Structure
+## 🛠️ Official Tech Stack
+
+| Domain | Technology | Badge |
+|---|---|---|
+| **Frontend Framework** | React 19 + TypeScript | ![React](https://img.shields.io/badge/React%2019-20232A?style=flat-square&logo=react&logoColor=61DAFB) ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white) |
+| **Styling & UI** | Tailwind CSS v4 + Radix UI + Lucide | ![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white) ![Radix UI](https://img.shields.io/badge/Radix%20UI-161618?style=flat-square&logo=radixui&logoColor=white) |
+| **Build Tooling** | Vite 7 | ![Vite](https://img.shields.io/badge/Vite%207-646CFF?style=flat-square&logo=vite&logoColor=white) |
+| **Backend Runtime** | Node.js 22 + Express | ![Node.js](https://img.shields.io/badge/Node.js%2022-5FA04E?style=flat-square&logo=nodedotjs&logoColor=white) ![Express](https://img.shields.io/badge/Express-000000?style=flat-square&logo=express&logoColor=white) |
+| **API Contract** | tRPC v11 + SuperJSON + Zod | ![tRPC](https://img.shields.io/badge/tRPC%20v11-2596BE?style=flat-square&logo=trpc&logoColor=white) ![Zod](https://img.shields.io/badge/Zod-3E67B1?style=flat-square&logo=zod&logoColor=white) |
+| **AI & LLM** | Google Gemini 2.0 Flash | ![Google Gemini](https://img.shields.io/badge/Google%20Gemini-8E75B2?style=flat-square&logo=googlegemini&logoColor=white) |
+| **Payment Gateway** | Razorpay Test Mode SDK | ![Razorpay](https://img.shields.io/badge/Razorpay-0C2340?style=flat-square&logo=razorpay&logoColor=3395FF) |
+| **Database** | Supabase (PostgreSQL) | ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white) |
+| **Real-Time Push** | Server-Sent Events (SSE) | ![SSE](https://img.shields.io/badge/Real--Time-SSE-0f9488?style=flat-square) |
+| **Hosting (Web)** | Vercel Edge Network | ![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white) |
+| **Hosting (API)** | Render Cloud | ![Render](https://img.shields.io/badge/Render-46E3B7?style=flat-square&logo=render&logoColor=white) |
+
+---
+
+## 📁 Repository Structure
 
 ```
 revora/
 ├── client/src/
 │   ├── pages/
-│   │   ├── CustomerVoiceRecovery.tsx   # Customer-facing Hinglish voice AI page
-│   │   ├── OperationsDashboard.tsx     # Merchant recovery overview
-│   │   ├── AIAgentsPage.tsx            # Voice recovery management
+│   │   ├── CustomerVoiceRecovery.tsx   # Customer-facing Hinglish Voice AI experience
+│   │   ├── OperationsDashboard.tsx     # Merchant revenue recovery overview
+│   │   ├── AIAgentsPage.tsx            # Voice recovery campaign management
 │   │   └── ...
 │   ├── components/
-│   │   ├── DashboardLayout.tsx         # SSE real-time notifications
-│   │   └── recoverai/                  # Recovery-specific components
+│   │   ├── DashboardLayout.tsx         # SSE real-time cross-device notifications
+│   │   └── recoverai/                  # Recovery metrics & visual primitives
 │   └── lib/
-│       └── speechService.ts            # Voice AI + mobile speech handling
+│       └── speechService.ts            # SpeechRecognition & SpeechSynthesis engine
 │
 ├── server/
-│   ├── app.ts                          # Express app + SSE endpoint
-│   ├── sseEmitter.ts                   # Cross-device notification broadcaster
-│   ├── routers.ts                      # tRPC API router
+│   ├── app.ts                          # Express server & SSE stream endpoint
+│   ├── sseEmitter.ts                   # Cross-device global SSE broadcast registry
+│   ├── routers.ts                      # End-to-end typed tRPC API routes
 │   └── recovery/
 │       ├── ai/
-│       │   └── geminiVoiceRecovery.ts  # Hinglish AI + Gemini 2.0 Flash
+│       │   └── geminiVoiceRecovery.ts  # Gemini 2.0 Flash prompt orchestration
 │       └── data/
-│           ├── voiceRecoveryStore.ts   # Session management + payment verify
-│           └── emailService.ts         # Recovery email templates
+│           ├── voiceRecoveryStore.ts   # Session state machine, reset timer, & verification
+│           └── emailService.ts         # Recovery email dispatch & links
 │
-├── database/                           # Supabase SQL schema + seed files
-├── docs/                               # Technical documentation
-├── vercel.json                         # Vercel config + API proxy rewrites
-└── render.yaml                         # Render backend deployment config
+├── database/                           # Supabase PostgreSQL schema & seed scripts
+├── docs/                               # System architecture & deployment docs
+├── vercel.json                         # Vercel proxy configuration
+└── render.yaml                         # Render containerized backend spec
 ```
 
 ---
 
-## ⚡ Local Development
+## ⚡ Local Development Setup
 
-### Prerequisites
-- Node.js ≥ 22.0.0
-- pnpm ≥ 10.4.0
-- Supabase project (for database)
-- Google Gemini API key
-- Razorpay Test Mode keys
-
-### Setup
-
+### 1. Clone & Install
 ```bash
-# 1. Clone the repository
 git clone https://github.com/your-username/revora.git
 cd revora
-
-# 2. Install dependencies
 pnpm install
-
-# 3. Configure environment variables
-cp .env.example .env
-# Fill in your keys in .env
-
-# 4. Start development server
-pnpm dev
 ```
 
-### Environment Variables
-
+### 2. Environment Configuration
+Create a `.env` file in the root directory:
 ```env
-# Supabase
-SUPABASE_URL=your_supabase_project_url
+# Supabase Database
+SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
-# Google Gemini
+# Google Gemini API
 GEMINI_API_KEY=your_gemini_api_key
 
 # Razorpay (Test Mode)
 RAZORPAY_KEY_ID=rzp_test_your_key_id
 RAZORPAY_KEY_SECRET=your_key_secret
 
-# App
+# Application URL
 APP_URL=http://localhost:5173
 ```
 
-### Commands
-
-| Command | Purpose |
-|---|---|
-| `pnpm dev` | Start local development server |
-| `pnpm build` | Build full-stack for production |
-| `pnpm build:vercel` | Build frontend only (for Vercel) |
-| `pnpm check` | TypeScript type checking |
-| `pnpm test` | Run Vitest test suite |
-| `pnpm format` | Format code with Prettier |
-
----
-
-## 🚢 Deployment
-
-### Frontend → Vercel
+### 3. Run Development Server
 ```bash
-# vercel.json handles everything:
-# - Builds frontend with: pnpm run build:vercel
-# - Serves from: dist/public
-# - Proxies /api/* → Render backend
+pnpm dev
 ```
-
-### Backend → Render
-```bash
-# render.yaml handles everything:
-# - Build: pnpm install && pnpm build
-# - Start: node dist/index.js
-# - Sets all environment variables
-```
-
-See [`docs/deployment.md`](docs/deployment.md) for detailed deployment guide.
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ---
 
-## 🎙️ How the Voice AI Works
+## 🎙️ Voice AI Flow & Supported Intents
 
 ```
-1. Customer opens recovery link on mobile
-           ↓
-2. Greeting plays: "Namaste! Main ReVora AI hoon..."
-           ↓
-3. Customer speaks (Web Speech API, hi-IN locale)
-           ↓
-4. Text sent to backend via tRPC mutation
-           ↓
-5. Gemini 2.0 Flash processes with Hinglish context
-   (Fast-path: deterministic matching <10ms for common intents)
-           ↓
-6. Response spoken back via SpeechSynthesis
-           ↓
-7. If customer agrees → Razorpay checkout opens
-           ↓
-8. Payment verified → Merchant notified via SSE
+Customer clicks link → Initial Hinglish greeting spoken
+                     ↓
+Customer speaks (Web Speech API, hi-IN locale)
+                     ↓
+Server fast-path lookup (<10ms) OR Gemini 2.0 Flash generation
+                     ↓
+Hinglish audio synthesised + action dispatched (e.g. open checkout)
+                     ↓
+Razorpay payment verified → Merchant dashboard notified via SSE
 ```
 
-### Supported Customer Intents (Hinglish)
-- _"payment kyu fail hua?"_ → Detailed failure explanation
-- _"ha, retry karna hai / payment karna chahta hoon"_ → Opens Razorpay
-- _"baad mein karunga"_ → Promise-to-pay recorded
-- _"nahi karna"_ → Polite decline recorded
-- _"kisi se baat karni hai"_ → Escalation to human support
-
----
-
-## 📊 Recovery Intelligence
-
-The recovery scoring system uses **Logistic Regression** trained on synthetic payment data:
-
-- **Features:** failure reason, payment method, amount, attempt number, customer history
-- **Output:** recovery probability (0.0 – 1.0) for each failed payment
-- **Policy gates:** deterministic rules validate every proposed recovery action
-- **Audit trail:** immutable log of every decision, action, and outcome
-
-| Recovery Probability | Action |
+| User Utterance (Hinglish) | AI Action / Response |
 |---|---|
-| ≥ 0.80 | Immediate voice AI outreach |
-| 0.60 – 0.79 | Email + follow-up |
-| 0.40 – 0.59 | Merchant review queue |
-| < 0.40 | Manual escalation |
+| *"Payment kyu fail hua?"* | Explains specific gateway failure reason in friendly terms |
+| *"Ha, open karo / pay karna hai"* | Automatically launches Razorpay checkout overlay |
+| *"Baad mein karunga"* | Logs promise-to-pay date with merchant follow-up |
+| *"Mujhe nahi chahiye"* | Gracefully closes call and records customer decline |
+| *"Agent se baat karni hai"* | Escalates ticket to merchant human support desk |
 
 ---
 
-## 👨‍💻 Team
+## 📄 Documentation Links
 
-Built with ❤️ for the **Razorpay AI Hackathon 2025**
-
-| | |
-|---|---|
-| **Project** | ReVora — Revenue Operations & AI Recovery |
-| **Category** | AI-powered Payment Recovery |
-| **Stack** | Full-Stack TypeScript, Google Gemini, Razorpay |
-
----
-
-## 📄 Documentation
-
-| Document | Contents |
-|---|---|
-| [`docs/architecture.md`](docs/architecture.md) | System architecture and safety boundaries |
-| [`docs/deployment.md`](docs/deployment.md) | Production deployment guide |
-| [`docs/evaluation.md`](docs/evaluation.md) | Recovery model evaluation |
-| [`docs/security.md`](docs/security.md) | Security boundaries and API key handling |
-| [`localguide/LOCAL_SETUP.md`](localguide/LOCAL_SETUP.md) | Step-by-step local setup guide |
-| [`localguide/WINDOWS_SETUP.md`](localguide/WINDOWS_SETUP.md) | Windows-specific setup guide |
-| [`database/README.md`](database/README.md) | Database schema documentation |
+- [System Architecture](docs/architecture.md)
+- [Production Deployment Guide](docs/deployment.md)
+- [Model Evaluation & Recovery Intelligence](docs/evaluation.md)
+- [Security & Isolation Model](docs/security.md)
+- [Database Schema Reference](database/README.md)
 
 ---
 
 <div align="center">
 
-**⭐ Star this repo if ReVora impressed you!**
-
 [![Live Demo](https://img.shields.io/badge/Try%20Live%20Demo-🚀-0f9488?style=for-the-badge)](https://revora-razorpay-ai.vercel.app/)
 
-*Made with ❤️ for Razorpay AI Hackathon 2025 · India*
+<br />
 
-![Razorpay](https://img.shields.io/badge/Powered%20by-Razorpay-3395FF?style=flat-square&logo=razorpay&logoColor=white)
-![Google Gemini](https://img.shields.io/badge/AI-Google%20Gemini%202.0%20Flash-4285F4?style=flat-square&logo=google&logoColor=white)
-![Vercel](https://img.shields.io/badge/Frontend-Vercel-000000?style=flat-square&logo=vercel&logoColor=white)
-![Render](https://img.shields.io/badge/Backend-Render-46E3B7?style=flat-square&logo=render&logoColor=white)
+**Built with pride for Razorpay AI Hackathon 2025 🇮🇳**
+
+[![Powered by Razorpay](https://img.shields.io/badge/Razorpay-0C2340?style=flat-square&logo=razorpay&logoColor=3395FF)](https://razorpay.com)
+[![Google Gemini](https://img.shields.io/badge/Google%20Gemini-8E75B2?style=flat-square&logo=googlegemini&logoColor=white)](https://deepmind.google/technologies/gemini)
+[![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white)](https://vercel.com)
+[![Render](https://img.shields.io/badge/Render-46E3B7?style=flat-square&logo=render&logoColor=white)](https://render.com)
 
 </div>
