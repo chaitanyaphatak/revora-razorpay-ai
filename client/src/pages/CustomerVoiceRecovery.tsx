@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { playCustomerNotificationSound } from "@/lib/soundEffects";
+import { triggerPaymentSuccessConfetti } from "@/lib/confetti";
 
 const currency = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 
@@ -105,6 +106,8 @@ export default function CustomerVoiceRecovery() {
       setVoiceState("completed");
       // Play customer celebration sound on phone
       playCustomerNotificationSound();
+      // Trigger golden & emerald confetti celebration burst
+      triggerPaymentSuccessConfetti();
       toast.success("Payment verified & completed via Razorpay!", {
         description: `Payment ID: ${paymentRef}`,
       });

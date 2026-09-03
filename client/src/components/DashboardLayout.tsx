@@ -13,6 +13,7 @@ import { GlobalCommandPalette } from "@/components/recoverai/GlobalCommandPalett
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { playPaymentRecoveredSound } from "@/lib/soundEffects";
+import { triggerPaymentSuccessConfetti } from "@/lib/confetti";
 
 type NavItem = { icon: typeof LayoutDashboard; label: string; path: string; tag?: string };
 
@@ -82,6 +83,9 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
       // Play celebratory cash chime / success ding sound on merchant dashboard
       playPaymentRecoveredSound();
+
+      // Trigger celebratory golden & emerald confetti burst
+      triggerPaymentSuccessConfetti();
 
       // Toast alert on merchant screen
       toast.success(`🎉 Payment Recovered: ₹${notice.amount.toLocaleString("en-IN")}`, {
