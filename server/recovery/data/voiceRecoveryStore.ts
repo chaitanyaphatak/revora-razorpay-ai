@@ -1,6 +1,7 @@
 import type { NormalizedPayment } from "./supabaseData.js";
 import { recordSimulation } from "./simulationStore.js";
 import { invalidateDashboardOverviewCache } from "./supabaseData.js";
+import { broadcastSSEEvent } from "../../sseEmitter.js";
 
 export type DemoCustomer = {
   customerId: string;
@@ -537,6 +538,17 @@ export async function verifyAndCompleteVoicePayment(
 
   // 4. Invalidate dashboard overview cache so recovered revenue increases immediately
   invalidateDashboardOverviewCache();
+
+  // 5. Push SSE event to ALL connected merchant dashboards (cross-device, real-time)
+  broadcastSSEEvent("payment_recovered", {
+    type: "PAYMENT_RECOVERED",
+    paymentId: session.paymentId,
+    customerName: session.customerName,
+    amount: session.amount,
+    paymentReference: paymentRef,
+    sessionId: session.sessionId,
+    timestamp: now,
+  });
 
   return {
     success: true,

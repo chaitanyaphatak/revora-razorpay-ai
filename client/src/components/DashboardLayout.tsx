@@ -2,7 +2,7 @@ import {
   Activity, BarChart3, Bell, Bot, Building2, CalendarClock, ChevronDown, CircleDollarSign, FileText, Gauge, LayoutDashboard, MessageSquareText, PlayCircle,
   PanelLeft, Settings2, ShieldAlert, Users, Workflow,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton,
@@ -65,16 +65,9 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     void utils.invoices.list.prefetch({ page: 1, pageSize: 50 });
   }, [utils]);
 
-  useEffect(() => {
-    const onManualSimulationRecorded = (event: Event) => {
-      const detail = (event as CustomEvent<{ paymentId?: string; action?: string; status?: string; timestamp?: string }>).detail;
-      if (!detail?.paymentId || !detail.timestamp) return;
-      setManualSimulationNotice({ paymentId: detail.paymentId, action: detail.action ?? "manual simulation", status: detail.status ?? "recorded", timestamp: detail.timestamp });
-      setHasUnreadManualSimulation(true);
-      window.setTimeout(() => setHasUnreadManualSimulation(false), 8_000);
-    };
-
-    const handleVoiceRecovered = (detail: { paymentId?: string; customerName?: string; amount?: number; paymentReference?: string; timestamp?: string }) => {
+  // Hoisted so both window-event effect and SSE effect can call it
+  const handleVoiceRecovered = useCallback(
+    (detail: { paymentId?: string; customerName?: string; amount?: number; paymentReference?: string; timestamp?: string }) => {
       if (!detail?.paymentId) return;
       const notice = {
         paymentId: detail.paymentId,
@@ -98,6 +91,17 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       void utils.recovery.payments.invalidate();
 
       window.setTimeout(() => setHasUnreadManualSimulation(false), 15_000);
+    },
+    [utils],
+  );
+
+  useEffect(() => {
+    const onManualSimulationRecorded = (event: Event) => {
+      const detail = (event as CustomEvent<{ paymentId?: string; action?: string; status?: string; timestamp?: string }>).detail;
+      if (!detail?.paymentId || !detail.timestamp) return;
+      setManualSimulationNotice({ paymentId: detail.paymentId, action: detail.action ?? "manual simulation", status: detail.status ?? "recorded", timestamp: detail.timestamp });
+      setHasUnreadManualSimulation(true);
+      window.setTimeout(() => setHasUnreadManualSimulation(false), 8_000);
     };
 
     const onVoicePaymentRecovered = (event: Event) => {
@@ -139,6 +143,56 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       channel?.close();
     };
   }, [utils]);
+
+  // ─── SSE: Real-time cross-device notifications ─────────────────────────────
+  // EventSource connects to server — payment from ANY device will push here.
+  const sseRetryRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sseRef = useRef<EventSource | null>(null);
+
+  useEffect(() => {
+    let destroyed = false;
+
+    function connect() {
+      if (destroyed) return;
+
+      // Point directly to backend to avoid Vercel's serverless timeout on SSE
+      const sseUrl = "/api/sse/notifications";
+
+      const es = new EventSource(sseUrl);
+      sseRef.current = es;
+
+      es.addEventListener("payment_recovered", (e: MessageEvent) => {
+        try {
+          const data = JSON.parse(e.data);
+          handleVoiceRecovered(data);
+        } catch {
+          // ignore malformed
+        }
+      });
+
+      es.addEventListener("connected", () => {
+        console.log("[ReVora SSE] Connected to merchant notifications stream");
+      });
+
+      es.onerror = () => {
+        es.close();
+        sseRef.current = null;
+        if (!destroyed) {
+          // Reconnect after 5s
+          sseRetryRef.current = setTimeout(connect, 5_000);
+        }
+      };
+    }
+
+    connect();
+
+    return () => {
+      destroyed = true;
+      if (sseRetryRef.current) clearTimeout(sseRetryRef.current);
+      sseRef.current?.close();
+      sseRef.current = null;
+    };
+  }, [handleVoiceRecovered]);
 
 
   return <>
