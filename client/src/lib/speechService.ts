@@ -173,12 +173,12 @@ export class BrowserSpeechController {
     if (this.silenceTimer) {
       clearTimeout(this.silenceTimer);
     }
-    // Auto-commit on 1.1s of silence (especially crucial for Android Chrome & mobile browsers)
+    // Auto-commit on 600ms of silence (ultra-responsive on mobile & desktop)
     this.silenceTimer = setTimeout(() => {
       if (this.latestTranscript.trim() && !this.hasCommittedFinal) {
         this.commitTranscript(this.latestTranscript);
       }
-    }, 1100);
+    }, 600);
   }
 
   private initRecognition() {
