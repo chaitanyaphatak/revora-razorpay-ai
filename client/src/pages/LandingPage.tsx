@@ -1,13 +1,14 @@
 import React from "react";
 import { Link } from "wouter";
-import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Bot, Cpu, Database, ExternalLink, Flame, Gauge, Github, Layers, Lock, ShieldCheck, Sparkles, Terminal, Volume2, Zap } from "lucide-react";
+import { ThreeRecoveryFooterCanvas } from "@/components/ThreeRecoveryFooterCanvas";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen w-full bg-black flex flex-col justify-between p-4 sm:p-8 lg:px-16 lg:py-10 font-sans selection:bg-[#ff409f] selection:text-white relative overflow-hidden">
+    <div className="min-h-screen w-full bg-black flex flex-col justify-between p-4 sm:p-8 lg:px-16 lg:py-10 font-sans selection:bg-[#ff409f] selection:text-white relative overflow-x-hidden">
       {/* Background Video — Local Asset, GPU Accelerated, Instant Load */}
       <video
-        className="absolute inset-0 w-full h-full object-cover pointer-events-none z-0 transform-gpu will-change-transform"
+        className="fixed inset-0 w-full h-full object-cover pointer-events-none z-0 transform-gpu will-change-transform opacity-80"
         autoPlay
         loop
         muted
@@ -17,11 +18,11 @@ export default function LandingPage() {
       />
 
       {/* Light Translucent Contrast Scrim for Maximum Video Vibrancy */}
-      <div className="absolute inset-0 bg-black/40 backdrop-brightness-95 pointer-events-none z-0" />
+      <div className="fixed inset-0 bg-black/50 backdrop-brightness-95 pointer-events-none z-0" />
 
       {/* Ambient Pulsing Neon Aura */}
-      <div className="pointer-events-none absolute -top-40 -left-40 w-[540px] h-[540px] rounded-full bg-[#ff409f]/15 blur-[160px] z-0 animate-pulse" />
-      <div className="pointer-events-none absolute -bottom-40 -right-40 w-[540px] h-[540px] rounded-full bg-[#ff409f]/15 blur-[160px] z-0" />
+      <div className="pointer-events-none fixed -top-40 -left-40 w-[540px] h-[540px] rounded-full bg-[#ff409f]/15 blur-[160px] z-0 animate-pulse" />
+      <div className="pointer-events-none fixed -bottom-40 -right-40 w-[540px] h-[540px] rounded-full bg-[#00f2fe]/10 blur-[160px] z-0" />
 
       {/* TOP FLOATING GLASSMORPHIC NAVIGATION BAR */}
       <header className="relative z-10 w-full max-w-7xl mx-auto">
@@ -83,7 +84,7 @@ export default function LandingPage() {
       </header>
 
       {/* HERO MAIN BODY GRID */}
-      <main className="relative z-10 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center my-auto py-10 sm:py-14 lg:py-16">
+      <main className="relative z-10 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center my-auto py-12 sm:py-16 lg:py-20">
         
         {/* LEFT SIDE: RECOVERY + SUBTEXT + 2026 / LIVE STATS */}
         <div className="lg:col-span-7 flex flex-col justify-between">
@@ -103,7 +104,7 @@ export default function LandingPage() {
           </p>
 
           {/* Year 2026 + Live Indicator Pill */}
-          <div className="mt-12 sm:mt-20 lg:mt-24 flex items-baseline gap-6">
+          <div className="mt-10 sm:mt-16 lg:mt-20 flex items-baseline gap-6">
             <div className="text-5xl sm:text-6xl lg:text-[80px] font-[900] text-white tracking-tight select-none">
               2026
             </div>
@@ -160,19 +161,156 @@ export default function LandingPage() {
 
       </main>
 
-      {/* Footer */}
-      <footer className="relative z-10 w-full max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-white/[0.08] text-xs text-white/50">
-        <span>&copy; ReVora AI Revenue Recovery. Built for modern high-velocity merchants.</span>
-        <div className="flex items-center gap-4">
-          <Link
-            href="/app"
-            className="inline-flex items-center gap-1.5 text-white/70 hover:text-white transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            Enter Operations Dashboard
-          </Link>
+      {/* 3D QUANTUM FOOTER SECTION */}
+      <footer className="relative z-10 w-full max-w-7xl mx-auto mt-8 sm:mt-12 pt-8 sm:pt-12 border-t border-white/[0.1] space-y-8 sm:space-y-10">
+        
+        {/* TOP ROW: Interactive Three.js 3D Reactor + Live Engine Matrix */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-stretch">
+          
+          {/* LEFT COL (7 cols): Interactive 3D Canvas */}
+          <div className="lg:col-span-7 h-[360px] sm:h-[400px]">
+            <ThreeRecoveryFooterCanvas />
+          </div>
+
+          {/* RIGHT COL (5 cols): Glassmorphic Live Engine HUD */}
+          <div className="lg:col-span-5 flex flex-col justify-between p-6 sm:p-7 rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-2xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] space-y-5">
+            <div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ff409f]/15 border border-[#ff409f]/30 text-[#ff409f] text-[11px] font-bold uppercase tracking-wider">
+                  <Flame className="w-3.5 h-3.5" />
+                  Razorpay AI Builder
+                </span>
+                <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Live Nodes Active
+                </span>
+              </div>
+
+              <h3 className="text-xl sm:text-2xl font-[900] text-white tracking-tight mt-3">
+                Autonomous Revenue Architecture
+              </h3>
+              <p className="text-xs sm:text-sm text-white/70 mt-1.5 leading-relaxed">
+                Multimodal voice recovery, real-time Razorpay checkout settlement, and deterministic policy engines safeguard merchant margins with zero latency.
+              </p>
+            </div>
+
+            {/* Micro Feature Grid */}
+            <div className="grid grid-cols-2 gap-3 text-left">
+              <div className="p-3 rounded-2xl bg-white/[0.04] border border-white/5 hover:border-white/20 transition-all">
+                <div className="flex items-center gap-2 text-[#00f2fe] text-xs font-bold mb-1">
+                  <Volume2 className="w-4 h-4" />
+                  Voice AI Agent
+                </div>
+                <p className="text-[11px] text-white/60">Hinglish conversational recovery with instant payment trigger</p>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-white/[0.04] border border-white/5 hover:border-white/20 transition-all">
+                <div className="flex items-center gap-2 text-[#ff409f] text-xs font-bold mb-1">
+                  <ShieldCheck className="w-4 h-4" />
+                  Razorpay HMAC
+                </div>
+                <p className="text-[11px] text-white/60">Constant-time timingSafeEqual verified checkout</p>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-white/[0.04] border border-white/5 hover:border-white/20 transition-all">
+                <div className="flex items-center gap-2 text-purple-400 text-xs font-bold mb-1">
+                  <Bot className="w-4 h-4" />
+                  Gemini 3.7 Core
+                </div>
+                <p className="text-[11px] text-white/60">Adaptive failure diagnosis & intent classification</p>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-white/[0.04] border border-white/5 hover:border-white/20 transition-all">
+                <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold mb-1">
+                  <Gauge className="w-4 h-4" />
+                  94.8% Auto SLA
+                </div>
+                <p className="text-[11px] text-white/60">Automated B2B & D2C receivables recovery engine</p>
+              </div>
+            </div>
+
+            <Link
+              href="/app"
+              className="w-full py-3 px-5 rounded-2xl bg-gradient-to-r from-white/10 to-white/5 hover:bg-white/20 border border-white/20 text-white text-xs sm:text-sm font-bold flex items-center justify-between group transition-all"
+            >
+              <span>Explore Operations Dashboard</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-[#ff409f]" />
+            </Link>
+          </div>
+
         </div>
+
+        {/* BOTTOM ROW: Navigation Columns & Copyright */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-4 pb-2 text-left">
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-white/90 mb-3 flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-[#ff409f]" />
+              Workspaces
+            </h4>
+            <ul className="space-y-2 text-xs text-white/60">
+              <li><Link href="/app" className="hover:text-white transition-colors">Overview Command</Link></li>
+              <li><Link href="/risk" className="hover:text-white transition-colors">Revenue Risk Center</Link></li>
+              <li><Link href="/recovery" className="hover:text-white transition-colors">Recovery Pipeline</Link></li>
+              <li><Link href="/manual-simulation" className="hover:text-white transition-colors">Manual Simulation</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-white/90 mb-3 flex items-center gap-1.5">
+              <Bot className="w-3.5 h-3.5 text-[#00f2fe]" />
+              Intelligence
+            </h4>
+            <ul className="space-y-2 text-xs text-white/60">
+              <li><Link href="/assistant" className="hover:text-white transition-colors">Merchant Assistant (Gemini)</Link></li>
+              <li><Link href="/ai-agents" className="hover:text-white transition-colors">AI Autonomous Agents</Link></li>
+              <li><Link href="/automations" className="hover:text-white transition-colors">Automation Simulator</Link></li>
+              <li><Link href="/analytics" className="hover:text-white transition-colors">Receivables Analytics</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-white/90 mb-3 flex items-center gap-1.5">
+              <Lock className="w-3.5 h-3.5 text-emerald-400" />
+              Security & Policy
+            </h4>
+            <ul className="space-y-2 text-xs text-white/60">
+              <li><span className="text-white/80">Constant-Time HMAC</span></li>
+              <li><span className="text-white/80">Deterministic Guardrails</span></li>
+              <li><Link href="/activity" className="hover:text-white transition-colors">Audit Trail Logs</Link></li>
+              <li><Link href="/settings" className="hover:text-white transition-colors">Policy Configuration</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-white/90 mb-3 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+              Hackathon Edition
+            </h4>
+            <ul className="space-y-2 text-xs text-white/60">
+              <li><span className="text-white/80">Razorpay AI Builder 2026</span></li>
+              <li><span className="text-white/80">Multimodal Hinglish Voice</span></li>
+              <li><span className="text-white/80">Autonomous SLA Recovery</span></li>
+              <li><span className="text-emerald-400 font-mono text-[11px]">System Status: ONLINE</span></li>
+            </ul>
+          </div>
+        </div>
+
+        {/* SUB-FOOTER BOTTOM BAR */}
+        <div className="flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-white/[0.08] text-xs text-white/50">
+          <span>&copy; 2026 ReVora AI Revenue Recovery. Built for high-velocity merchants & Razorpay Ecosystem.</span>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/app"
+              className="inline-flex items-center gap-1.5 text-white/80 hover:text-white transition-colors font-semibold"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 text-[#ff409f]" />
+              Enter Operations Dashboard
+            </Link>
+          </div>
+        </div>
+
       </footer>
     </div>
   );
 }
+
