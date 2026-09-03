@@ -51,11 +51,13 @@ export type RecoveryIntelligence = {
   candidates: ActionCandidate[];
 };
 
-const retryableFailures = new Set(["gateway_timeout", "upi_timeout", "network_error", "issuer_declined"]);
+const retryableFailures = new Set(["gateway_timeout", "upi_timeout", "network_error", "issuer_declined", "bank_server_down", "network_drop"]);
 const actionBaseSuccess: Record<RecoveryAction, Record<string, number>> = {
   retry_payment: {
     gateway_timeout: 0.85,
-    upi_timeout: 0.8,
+    upi_timeout: 0.82,
+    bank_server_down: 0.88,
+    network_drop: 0.80,
     network_error: 0.74,
     issuer_declined: 0.58,
     default: 0.2,

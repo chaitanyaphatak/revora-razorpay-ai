@@ -113,7 +113,7 @@ export default function PaymentDetail({ params }: { params: { paymentId: string 
                   className="rounded-lg bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-semibold text-xs shadow-sm flex items-center gap-1.5"
                 >
                   <Mail className="h-3.5 w-3.5" />
-                  Send Voice Recovery Email (Demo)
+                  Send Voice Recovery Email
                 </Button>
               )}
 

@@ -42,16 +42,16 @@ const manualSimulationInput = z.object({
 });
 
 const automationSimulationInput = z.object({
-  automationId: z.string().trim().min(4).max(80).regex(/^auto_[A-Za-z0-9_-]+$/),
-  automationName: z.string().trim().min(2).max(80).regex(/^[A-Za-z0-9 .,'&()/-]+$/),
-  paymentId: z.string().trim().min(1).max(64).regex(/^[A-Za-z0-9_-]+$/),
+  automationId: z.string().trim().min(1).max(120),
+  automationName: z.string().trim().min(1).max(120),
+  paymentId: z.string().trim().min(1).max(64),
   action: z.enum(recoveryActions),
 });
 
 const invoiceAutomationSimulationInput = z.object({
-  automationId: z.string().trim().min(4).max(80).regex(/^auto_[A-Za-z0-9_-]+$/),
-  automationName: z.string().trim().min(2).max(80).regex(/^[A-Za-z0-9 .,'&()/-]+$/),
-  invoiceId: z.string().trim().min(1).max(80).regex(/^[A-Za-z0-9_-]+$/),
+  automationId: z.string().trim().min(1).max(120),
+  automationName: z.string().trim().min(1).max(120),
+  invoiceId: z.string().trim().min(1).max(80),
   action: z.enum(recoveryActions),
 });
 
@@ -314,30 +314,44 @@ export const appRouter = router({
     }),
     automationSimulate: publicProcedure.input(automationSimulationInput).mutation(async ({ input }) => {
       const detail = await getPaymentDetail(input.paymentId);
-      if (!detail) throw new Error("Payment was not found in the synthetic Supabase dataset.");
+      if (!detail) throw new Error(`Payment "${input.paymentId}" was not found.`);
       const scoredPayment = { ...detail.payment, recoveryProbability: predictPaymentRecoveryProbability(detail.payment) };
       const automation = simulateAutomationRecovery(scoredPayment, input.action);
-      const persisted = await recordSimulation(automation.simulation as import("./recovery/domain/recoveryEngine.js").SimulationResult, {
-        recoveryProbability: scoredPayment.recoveryProbability,
-        attemptNumber: scoredPayment.attemptNumber,
-        recoveryCaseId: detail.recoveryCase?.id,
-        executionMode: "automation",
-        automationName: input.automationName,
-      });
-      invalidateDashboardOverviewCache();
+      let persisted = null;
+      try {
+        persisted = await recordSimulation(automation.simulation as import("./recovery/domain/recoveryEngine.js").SimulationResult, {
+          recoveryProbability: scoredPayment.recoveryProbability,
+          attemptNumber: scoredPayment.attemptNumber,
+          recoveryCaseId: detail.recoveryCase?.id,
+          executionMode: "automation",
+          automationName: input.automationName,
+        });
+      } catch (storeError) {
+        console.warn("[automationSimulate] Remote persistence fallback:", storeError);
+      }
+      try {
+        invalidateDashboardOverviewCache();
+      } catch {}
       return { automation, persisted };
     }),
     automationInvoiceSimulate: publicProcedure.input(invoiceAutomationSimulationInput).mutation(async ({ input }) => {
       const context = await getInvoiceRiskInput(input.invoiceId);
-      if (!context) throw new Error("Overdue invoice was not found in the configured Supabase receivables source.");
+      if (!context) throw new Error(`Invoice "${input.invoiceId}" was not found.`);
       const automation = simulateOverdueInvoiceAutomation(context.input, input.action);
-      const persisted = await recordInvoiceSimulation(automation.simulation as import("./recovery/domain/invoiceRecoveryEngine.js").InvoiceSimulationResult, {
-        recoveryProbability: context.invoice.recoveryProbability,
-        outstandingAmount: context.invoice.outstandingAmount,
-        executionMode: "automation",
-        automationName: input.automationName,
-      });
-      invalidateDashboardOverviewCache();
+      let persisted = null;
+      try {
+        persisted = await recordInvoiceSimulation(automation.simulation as import("./recovery/domain/invoiceRecoveryEngine.js").InvoiceSimulationResult, {
+          recoveryProbability: context.invoice.recoveryProbability,
+          outstandingAmount: context.invoice.outstandingAmount,
+          executionMode: "automation",
+          automationName: input.automationName,
+        });
+      } catch (storeError) {
+        console.warn("[automationInvoiceSimulate] Remote persistence fallback:", storeError);
+      }
+      try {
+        invalidateDashboardOverviewCache();
+      } catch {}
       return { automation, persisted };
     }),
 

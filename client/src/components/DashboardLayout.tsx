@@ -67,10 +67,21 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     void utils.invoices.list.prefetch({ page: 1, pageSize: 50 });
   }, [utils]);
 
+  const processedRecoveriesRef = useRef<Set<string>>(new Set());
+
   // Hoisted so both window-event effect and SSE effect can call it
   const handleVoiceRecovered = useCallback(
     (detail: { paymentId?: string; customerName?: string; amount?: number; paymentReference?: string; timestamp?: string }) => {
       if (!detail?.paymentId) return;
+
+      // 🛡️ Deduplicate across channels (BroadcastChannel + LocalStorage + SSE)
+      const dedupKey = `${detail.paymentId}_${detail.paymentReference ?? detail.amount ?? ""}`;
+      if (processedRecoveriesRef.current.has(dedupKey)) {
+        return; // Already notified — block duplicate toast and chime
+      }
+      processedRecoveriesRef.current.add(dedupKey);
+      window.setTimeout(() => processedRecoveriesRef.current.delete(dedupKey), 30_000);
+
       const notice = {
         paymentId: detail.paymentId,
         customerName: detail.customerName ?? "Customer",
@@ -81,14 +92,15 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       setVoiceRecoveryNotice(notice);
       setHasUnreadManualSimulation(true);
 
-      // Play celebratory cash chime / success ding sound on merchant dashboard
+      // Play celebratory cash chime / success ding sound on merchant dashboard (only once)
       playPaymentRecoveredSound();
 
-      // Trigger celebratory golden & emerald confetti burst
+      // Trigger celebratory golden & emerald confetti burst (only once)
       triggerPaymentSuccessConfetti();
 
-      // Toast alert on merchant screen
+      // Toast alert on merchant screen (guaranteed single instance with unique id)
       toast.success(`🎉 Payment Recovered: ₹${notice.amount.toLocaleString("en-IN")}`, {
+        id: `payment_recovered_${notice.paymentId}`,
         description: `${notice.customerName} completed Razorpay payment (${notice.paymentReference})`,
       });
 
