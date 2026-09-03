@@ -12,6 +12,7 @@ import { useIsMobile } from "@/hooks/useMobile";
 import { GlobalCommandPalette } from "@/components/recoverai/GlobalCommandPalette";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { playPaymentRecoveredSound } from "@/lib/soundEffects";
 
 type NavItem = { icon: typeof LayoutDashboard; label: string; path: string; tag?: string };
 
@@ -78,6 +79,9 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       };
       setVoiceRecoveryNotice(notice);
       setHasUnreadManualSimulation(true);
+
+      // Play celebratory cash chime / success ding sound on merchant dashboard
+      playPaymentRecoveredSound();
 
       // Toast alert on merchant screen
       toast.success(`🎉 Payment Recovered: ₹${notice.amount.toLocaleString("en-IN")}`, {

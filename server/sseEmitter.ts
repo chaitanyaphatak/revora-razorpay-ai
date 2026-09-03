@@ -28,14 +28,14 @@ export function removeSSEClient(id: string): void {
 /** Broadcast an event to ALL connected merchant dashboards */
 export function broadcastSSEEvent(event: string, data: unknown): void {
   const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
-  for (const [id, client] of clients) {
+  clients.forEach((client, id) => {
     try {
       client.res.write(payload);
     } catch {
       // Client disconnected mid-write — clean up
       clients.delete(id);
     }
-  }
+  });
 }
 
 export function getSSEClientCount(): number {
