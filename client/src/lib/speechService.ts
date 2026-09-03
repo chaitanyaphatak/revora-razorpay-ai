@@ -1,9 +1,8 @@
 /**
- * Zero-cost, in-browser Multilingual Speech Service using standard Web Speech API.
- * - Supports Marathi (मराठी), Hindi/Hinglish (हिन्दी), and Indian English with Neural Voice Selection.
+ * Zero-cost, in-browser Speech Service using standard Web Speech API.
  * - Speech-to-Text (STT): webkitSpeechRecognition / SpeechRecognition
  * - Text-to-Speech (TTS): window.speechSynthesis
- * - No paid third-party voice providers
+ * - No paid third-party voice providers (Twilio, Vapi, ElevenLabs, etc.)
  */
 
 // Browser SpeechRecognition interface types
@@ -55,106 +54,65 @@ if (typeof window !== "undefined" && "speechSynthesis" in window) {
 }
 
 /**
- * Detects whether the spoken or synthesized text is Marathi, Hindi/Hinglish, or English.
+ * Finds the highest quality Indian / Hindi / Hinglish voice available in the browser.
+ * Prioritizes natural neural voices (Edge / Chrome) over legacy robotic voices.
  */
-export function detectLanguage(text: string): "mr" | "hi" | "en" {
-  if (!text) return "hi";
-  const lower = text.toLowerCase();
-
-  // Marathi specific markers (Devnagari words & phonetic transliterations)
-  const marathiMarkers = [
-    "झाला", "झाली", "झाले", "करायचं", "करायचे", "सांगा", "पाहिजे", "आता", "नको",
-    "नाही", "कसं", "कसे", "का", "बघू", "करा", "लिंक", "रद्द", "थांबा", "उद्या",
-    "नंतर", "माझं", "माझा", "माझी", "तुमचा", "तुमचे", "तुमची", "पैसे", "करावे",
-    "झालं", "आहे", "होय", "kashamule", "zhala", "karaycha", "nako", "maza", "mazi"
-  ];
-
-  if (marathiMarkers.some((m) => text.includes(m) || lower.includes(m))) {
-    return "mr";
-  }
-
-  // Devanagari Hindi or Hinglish keywords
-  const devanagariRegex = /[\u0900-\u097F]/;
-  const hindiHinglishKeywords = [
-    "karna", "karo", "kyu", "kyun", "hua", "hai", "mujhe", "mera", "meri",
-    "paise", "paisa", "aapka", "karenge", "batao", "link", "de", "do", "kripya",
-    "namaste", "dhanyawad", "baad", "mein", "ab", "abhi", "karte", "raha", "gaya"
-  ];
-
-  if (devanagariRegex.test(text) || hindiHinglishKeywords.some((w) => lower.includes(w))) {
-    return "hi";
-  }
-
-  return "en";
-}
-
-/**
- * Finds the highest quality Neural voice for the specified language:
- * - Marathi: Microsoft Aarohi / Manohar or Google Marathi
- * - Hindi: Microsoft Swara / Madhur or Google Hindi
- * - English: Microsoft Neerja / Prabhat or Google Indian English
- */
-export function getBestVoiceForLanguage(lang: "mr" | "hi" | "en"): { voice: SpeechSynthesisVoice | null; langCode: string } {
+export function getBestIndianVoice(): SpeechSynthesisVoice | null {
   const voices = loadVoices();
-  if (voices.length === 0) return { voice: null, langCode: lang === "mr" ? "mr-IN" : lang === "en" ? "en-IN" : "hi-IN" };
+  if (voices.length === 0) return null;
 
-  if (lang === "mr") {
-    // 1. Marathi Neural Voices (Edge / Chrome)
-    const aarohi = voices.find(
-      (v) => (v.name.includes("Aarohi") || v.name.includes("Manohar")) && v.name.includes("Natural")
-    );
-    if (aarohi) return { voice: aarohi, langCode: "mr-IN" };
-
-    const googleMarathi = voices.find(
-      (v) => v.name.includes("Google") && (v.lang.startsWith("mr") || v.name.includes("मराठी") || v.name.toLowerCase().includes("marathi"))
-    );
-    if (googleMarathi) return { voice: googleMarathi, langCode: "mr-IN" };
-
-    const anyMarathi = voices.find(
-      (v) => v.lang.startsWith("mr") || v.name.toLowerCase().includes("marathi") || v.name.includes("मराठी")
-    );
-    if (anyMarathi) return { voice: anyMarathi, langCode: "mr-IN" };
-  }
-
-  if (lang === "hi" || lang === "mr") {
-    // 2. Hindi Neural Voices (Edge / Chrome)
-    const swara = voices.find(
-      (v) => (v.name.includes("Swara") || v.name.includes("Madhur")) && v.name.includes("Natural")
-    );
-    if (swara) return { voice: swara, langCode: "hi-IN" };
-
-    const googleHindi = voices.find(
-      (v) => v.name.includes("Google") && (v.lang.startsWith("hi") || v.name.includes("हिन्दी") || v.name.includes("Hindi"))
-    );
-    if (googleHindi) return { voice: googleHindi, langCode: "hi-IN" };
-
-    const anyHindi = voices.find(
-      (v) => v.lang.startsWith("hi") || v.name.toLowerCase().includes("hindi")
-    );
-    if (anyHindi) return { voice: anyHindi, langCode: "hi-IN" };
-  }
-
-  // 3. Indian English Neural Voices
-  const neerja = voices.find(
-    (v) => (v.name.includes("Neerja") || v.name.includes("Prabhat")) && v.name.includes("Natural")
+  // Priority order for natural, crystal clear articulation:
+  // 1. Microsoft Neural Indian voices (Edge) - studio quality
+  const neuralHindi = voices.find(
+    (v) =>
+      (v.name.includes("Swara") || v.name.includes("Madhur")) &&
+      v.name.includes("Natural"),
   );
-  if (neerja) return { voice: neerja, langCode: "en-IN" };
+  if (neuralHindi) return neuralHindi;
+
+  const neuralIndianEnglish = voices.find(
+    (v) =>
+      (v.name.includes("Neerja") || v.name.includes("Prabhat")) &&
+      v.name.includes("Natural"),
+  );
+  if (neuralIndianEnglish) return neuralIndianEnglish;
+
+  // 2. Google Hindi / Indian English (Chrome)
+  const googleHindi = voices.find(
+    (v) =>
+      v.name.includes("Google") &&
+      (v.lang.startsWith("hi") || v.name.includes("हिन्दी") || v.name.includes("Hindi")),
+  );
+  if (googleHindi) return googleHindi;
 
   const googleIndianEnglish = voices.find(
-    (v) => v.name.includes("Google") && (v.lang === "en-IN" || v.name.includes("India"))
+    (v) => v.name.includes("Google") && (v.lang === "en-IN" || v.name.includes("India")),
   );
-  if (googleIndianEnglish) return { voice: googleIndianEnglish, langCode: "en-IN" };
+  if (googleIndianEnglish) return googleIndianEnglish;
 
+  // 3. Any Hindi voice (hi-IN, hi)
+  const anyHindi = voices.find(
+    (v) => v.lang.startsWith("hi") || v.name.toLowerCase().includes("hindi"),
+  );
+  if (anyHindi) return anyHindi;
+
+  // 4. Any Indian English voice (en-IN)
   const anyIndianEnglish = voices.find(
-    (v) => v.lang.includes("en-IN") || v.name.toLowerCase().includes("india")
+    (v) =>
+      v.lang.includes("en-IN") ||
+      v.name.toLowerCase().includes("india") ||
+      v.name.toLowerCase().includes("heera") ||
+      v.name.toLowerCase().includes("kalpana"),
   );
-  if (anyIndianEnglish) return { voice: anyIndianEnglish, langCode: "en-IN" };
+  if (anyIndianEnglish) return anyIndianEnglish;
 
-  return { voice: voices[0] || null, langCode: "hi-IN" };
-}
+  // 5. Any natural English voice
+  const anyNaturalEnglish = voices.find(
+    (v) => v.name.includes("Natural") && v.lang.startsWith("en"),
+  );
+  if (anyNaturalEnglish) return anyNaturalEnglish;
 
-export function getBestIndianVoice(): SpeechSynthesisVoice | null {
-  return getBestVoiceForLanguage("hi").voice;
+  return voices[0] || null;
 }
 
 /**
@@ -162,23 +120,28 @@ export function getBestIndianVoice(): SpeechSynthesisVoice | null {
  */
 function cleanTextForSpeech(rawText: string): string {
   return rawText
+    // Remove markdown formatting
     .replace(/\*\*(.*?)\*\*/g, "$1")
     .replace(/\*(.*?)\*/g, "$1")
     .replace(/__(.*?)__/g, "$1")
     .replace(/`([^`]+)`/g, "$1")
     .replace(/#+\s+/g, "")
+    // Remove emojis (surrogate pairs) and symbols
     .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, "")
     .replace(/[\u2600-\u27BF]/g, "")
+    // Replace currency symbol with readable word
     .replace(/₹\s*([0-9,]+)/g, "$1 rupees")
     .replace(/INR\s*([0-9,]+)/gi, "$1 rupees")
+    // Clean extra whitespace
     .replace(/\s+/g, " ")
     .trim();
 }
 
+
 export class BrowserSpeechController {
   private recognition: any = null;
   private isListening = false;
-  private preferredLanguage = "hi-IN";
+  private preferredLanguage = "hi-IN"; // Hinglish / Indian Hindi default, also listens to Indian English
   private currentUtterance: SpeechSynthesisUtterance | null = null;
   private latestTranscript = "";
   private hasCommittedFinal = false;
@@ -197,43 +160,36 @@ export class BrowserSpeechController {
     const trimmed = text.trim();
     if (!trimmed || this.hasCommittedFinal) return;
     this.hasCommittedFinal = true;
+    this.latestTranscript = "";
     if (this.silenceTimer) {
       clearTimeout(this.silenceTimer);
       this.silenceTimer = null;
     }
-    this.isListening = false;
-    this.onStateChange?.("idle");
-    try {
-      this.recognition?.stop();
-    } catch {}
+    this.stopListening();
     this.onTranscript(trimmed, true);
   }
 
   private resetSilenceTimer() {
-    if (this.silenceTimer) clearTimeout(this.silenceTimer);
-    // Auto-commit speech after 1.8s pause on mobile
+    if (this.silenceTimer) {
+      clearTimeout(this.silenceTimer);
+    }
+    // Auto-commit on 600ms of silence (ultra-responsive on mobile & desktop)
     this.silenceTimer = setTimeout(() => {
       if (this.latestTranscript.trim() && !this.hasCommittedFinal) {
         this.commitTranscript(this.latestTranscript);
       }
-    }, 1800);
+    }, 600);
   }
 
   private initRecognition() {
-    if (typeof window === "undefined") return;
+    if (!isSpeechRecognitionSupported()) return;
     const win = window as IWindowWithSpeech;
     const SpeechRecognitionClass = win.SpeechRecognition || win.webkitSpeechRecognition;
 
-    if (!SpeechRecognitionClass) {
-      console.warn("[SpeechService] SpeechRecognition not supported in this browser.");
-      return;
-    }
-
     try {
       this.recognition = new SpeechRecognitionClass();
-      this.recognition.continuous = true;
+      this.recognition.continuous = false;
       this.recognition.interimResults = true;
-      this.recognition.maxAlternatives = 1;
       this.recognition.lang = this.preferredLanguage;
 
       this.recognition.onstart = () => {
@@ -276,6 +232,7 @@ export class BrowserSpeechController {
         this.isListening = false;
         this.onStateChange?.("idle");
         if (event.error === "no-speech") {
+          // If we had recorded speech before no-speech error, commit it
           if (this.latestTranscript.trim() && !this.hasCommittedFinal) {
             this.commitTranscript(this.latestTranscript);
           }
@@ -295,6 +252,7 @@ export class BrowserSpeechController {
           clearTimeout(this.silenceTimer);
           this.silenceTimer = null;
         }
+        // Critical for Mobile: if recognition ended on silence and had uncommitted speech, commit it now!
         if (this.latestTranscript.trim() && !this.hasCommittedFinal) {
           this.commitTranscript(this.latestTranscript);
         }
@@ -339,7 +297,9 @@ export class BrowserSpeechController {
     if (this.recognition && this.isListening) {
       try {
         this.recognition.stop();
-      } catch {}
+      } catch {
+        // Ignore
+      }
     }
     this.isListening = false;
     this.onStateChange?.("idle");
@@ -375,27 +335,15 @@ export class BrowserSpeechController {
 
       const utterance = new SpeechSynthesisUtterance(cleaned);
       this.currentUtterance = utterance;
+      
+      // Calibrated rate for crystal clear Hinglish pronunciation (not rushed)
+      utterance.rate = 0.94;
+      utterance.pitch = 1.0;
 
-      // Detect language (Marathi / Hindi / English) and route to best Neural Human Voice
-      const detectedLang = detectLanguage(cleaned);
-      const { voice, langCode } = getBestVoiceForLanguage(detectedLang);
-
-      if (detectedLang === "mr") {
-        utterance.rate = 0.93;
-        utterance.pitch = 1.02;
-      } else if (detectedLang === "hi") {
-        utterance.rate = 0.94;
-        utterance.pitch = 1.02;
-      } else {
-        utterance.rate = 0.96;
-        utterance.pitch = 1.0;
-      }
-
-      if (voice) {
-        utterance.voice = voice;
-        utterance.lang = voice.lang || langCode;
-      } else {
-        utterance.lang = langCode;
+      const bestVoice = getBestIndianVoice();
+      if (bestVoice) {
+        utterance.voice = bestVoice;
+        utterance.lang = bestVoice.lang || "hi-IN";
       }
 
       utterance.onstart = () => {
@@ -410,6 +358,7 @@ export class BrowserSpeechController {
         finish();
       };
 
+      // Safety timeout for mobile browsers where utterance.onend might not fire reliably
       const maxEstimatedDurationMs = Math.max(2500, cleaned.length * 85 + 1500);
       setTimeout(finish, maxEstimatedDurationMs);
 
@@ -423,3 +372,5 @@ export class BrowserSpeechController {
     }
   }
 }
+
+

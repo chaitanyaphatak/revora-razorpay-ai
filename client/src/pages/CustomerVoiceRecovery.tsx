@@ -460,7 +460,7 @@ export default function CustomerVoiceRecovery() {
                 <h2 className="text-sm font-bold text-white flex items-center gap-2">
                   ReVora Sahayak
                   <span className="text-[10px] font-normal text-teal-300 bg-teal-950/80 px-2 py-0.5 rounded-full border border-teal-800">
-                    Hinglish · मराठी · English AI
+                    Hinglish Voice AI
                   </span>
                 </h2>
                 <p className="text-[11px] text-slate-400">
@@ -471,7 +471,7 @@ export default function CustomerVoiceRecovery() {
                       : paymentState === "PAYMENT_VERIFICATION"
                         ? "Verifying Razorpay signature..."
                         : voiceState === "listening"
-                          ? "Listening in Hinglish / मराठी / English..."
+                          ? "Listening to you in Hinglish..."
                           : voiceState === "processing"
                             ? "Processing with Gemini AI..."
                             : voiceState === "speaking"
@@ -633,7 +633,7 @@ export default function CustomerVoiceRecovery() {
                   <Input
                     value={textInput}
                     onChange={(e) => setTextInput(e.target.value)}
-                    placeholder="Type in Hinglish, मराठी, or English (e.g. Payment link do, पेमेंट करायचं आहे)..."
+                    placeholder="Type in Hinglish or English (e.g. Payment link do, Razorpay se pay karna hai)..."
                     disabled={sendTurnMutation.isPending || createPaymentOrderMutation.isPending || verifyPaymentMutation.isPending}
                     className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm focus-visible:ring-teal-500"
                   />
