@@ -2,7 +2,7 @@
 
 # ⚡ ReVora — Revenue Operations & AI Recovery
 
-### 🏆 Built for Razorpay AI Hackathon 2025
+### 🏆 Built for Razorpay AI Hackathon 2026
 
 **India's first Hinglish Voice AI agent that recovers failed payments in real-time.**  
 When a customer's payment fails, ReVora's AI agent initiates a natural Hinglish conversation, addresses doubts, negotiates alternatives, and recovers revenue automatically.
@@ -263,7 +263,7 @@ Razorpay payment verified → Merchant dashboard notified via SSE
 
 <br />
 
-**Built with pride for Razorpay AI Hackathon 2025 🇮🇳**
+**Built with pride for Razorpay AI Hackathon 2026 🇮🇳**
 
 [![Powered by Razorpay](https://img.shields.io/badge/Razorpay-0C2340?style=flat-square&logo=razorpay&logoColor=3395FF)](https://razorpay.com)
 [![Google Gemini](https://img.shields.io/badge/Google%20Gemini-8E75B2?style=flat-square&logo=googlegemini&logoColor=white)](https://deepmind.google/technologies/gemini)
