@@ -15,7 +15,7 @@ export default function LandingPage() {
   }, [utils]);
 
   return (
-    <div className="min-h-screen w-full bg-black flex flex-col justify-between p-4 sm:p-8 lg:px-16 lg:py-10 font-sans selection:bg-[#ff409f] selection:text-white relative overflow-x-hidden">
+    <div className="min-h-screen w-full bg-black flex flex-col justify-between p-3.5 sm:p-8 lg:px-16 lg:py-10 font-sans selection:bg-[#ff409f] selection:text-white relative overflow-x-hidden scroll-smooth">
       {/* Background Video — Local Asset, GPU Accelerated, Instant Load */}
       <video
         className="fixed inset-0 w-full h-full object-cover pointer-events-none z-0 transform-gpu will-change-transform opacity-80"
@@ -36,13 +36,13 @@ export default function LandingPage() {
 
       {/* TOP FLOATING GLASSMORPHIC NAVIGATION BAR */}
       <header className="relative z-10 w-full max-w-7xl mx-auto">
-        <div className="flex items-center justify-between gap-4 backdrop-blur-2xl bg-white/[0.04] border border-white/10 rounded-full px-4 sm:px-8 py-3 shadow-[0_15px_45px_rgba(0,0,0,0.5)]">
+        <div className="flex items-center justify-between gap-3 sm:gap-4 backdrop-blur-2xl bg-white/[0.04] border border-white/10 rounded-full px-3.5 sm:px-8 py-2.5 sm:py-3 shadow-[0_15px_45px_rgba(0,0,0,0.5)]">
           {/* Logo on Left */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center p-1 shadow-md shadow-pink-500/15 transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_0_18px_rgba(255,64,159,0.5)]">
+          <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white flex items-center justify-center p-1 shadow-md shadow-pink-500/15 transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_0_18px_rgba(255,64,159,0.5)]">
               <img src="/assets/revora-logo.png" alt="ReVora" className="w-full h-full object-contain" />
             </div>
-            <span className="text-white text-2xl sm:text-3xl font-[900] tracking-tight select-none">
+            <span className="text-white text-xl sm:text-3xl font-[900] tracking-tight select-none">
               ReVora
             </span>
           </Link>
@@ -76,16 +76,16 @@ export default function LandingPage() {
           </nav>
 
           {/* Right Action Buttons */}
-          <div className="flex items-center gap-2.5 sm:gap-3.5">
+          <div className="flex items-center gap-2 sm:gap-3.5">
             <Link
               href="/manual-simulation"
-              className="rounded-full px-5 sm:px-6 py-2 border border-white/20 bg-white/[0.05] text-white text-xs sm:text-sm font-medium hover:bg-white/15 hover:border-white/40 transition-all active:scale-95 inline-flex items-center justify-center"
+              className="rounded-full px-3.5 sm:px-6 py-1.5 sm:py-2 border border-white/20 bg-white/[0.05] text-white text-xs sm:text-sm font-medium hover:bg-white/15 hover:border-white/40 transition-all active:scale-95 inline-flex items-center justify-center"
             >
               Simulate
             </Link>
             <Link
               href="/app"
-              className="rounded-full px-5 sm:px-6 py-2 bg-[#ff409f] hover:bg-[#f42e94] text-white text-xs sm:text-sm font-semibold shadow-[0_0_25px_rgba(255,64,159,0.35)] hover:shadow-[0_0_35px_rgba(255,64,159,0.6)] transition-all active:scale-95 inline-flex items-center justify-center"
+              className="rounded-full px-4 sm:px-6 py-1.5 sm:py-2 bg-[#ff409f] hover:bg-[#f42e94] text-white text-xs sm:text-sm font-semibold shadow-[0_0_25px_rgba(255,64,159,0.35)] hover:shadow-[0_0_35px_rgba(255,64,159,0.6)] transition-all active:scale-95 inline-flex items-center justify-center"
             >
               Launch AI
             </Link>
@@ -94,18 +94,18 @@ export default function LandingPage() {
       </header>
 
       {/* HERO MAIN BODY GRID */}
-      <main className="relative z-10 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center my-auto py-12 sm:py-16 lg:py-20">
+      <main className="relative z-10 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-10 lg:gap-8 items-center my-auto py-8 sm:py-16 lg:py-20">
         
         {/* LEFT SIDE: RECOVERY + SUBTEXT + 2026 / LIVE STATS */}
         <div className="lg:col-span-7 flex flex-col justify-between">
           {/* RECOVERY headline with Interactive Neon Glow */}
-          <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-[104px] font-[900] tracking-tight leading-[0.92] uppercase select-none transition-all duration-300 hover:drop-shadow-[0_0_40px_rgba(255,64,159,0.7)] cursor-default">
+          <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[104px] font-[900] tracking-tight leading-[0.92] uppercase select-none transition-all duration-300 hover:drop-shadow-[0_0_40px_rgba(255,64,159,0.7)] cursor-default break-words">
             <span className="text-[#ff409f]">RECOV</span>
             <span className="text-white">ERY</span>
           </h1>
 
           {/* Subtext */}
-          <p className="text-white/90 text-base sm:text-lg lg:text-xl font-normal leading-snug mt-6 sm:mt-8 max-w-sm">
+          <p className="text-white/90 text-sm sm:text-lg lg:text-xl font-normal leading-snug mt-4 sm:mt-8 max-w-sm">
             Next-gen recovery engine that
             <br />
             safeguards your profits
@@ -114,11 +114,11 @@ export default function LandingPage() {
           </p>
 
           {/* Year 2026 + Live Indicator Pill */}
-          <div className="mt-10 sm:mt-16 lg:mt-20 flex items-baseline gap-6">
-            <div className="text-5xl sm:text-6xl lg:text-[80px] font-[900] text-white tracking-tight select-none">
+          <div className="mt-8 sm:mt-16 lg:mt-20 flex flex-wrap items-baseline gap-4 sm:gap-6">
+            <div className="text-4xl sm:text-6xl lg:text-[80px] font-[900] text-white tracking-tight select-none">
               2026
             </div>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold backdrop-blur-md">
+            <div className="inline-flex items-center gap-2 px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold backdrop-blur-md">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
               <span>94.8% Auto SLA</span>
             </div>
@@ -126,30 +126,30 @@ export default function LandingPage() {
         </div>
 
         {/* RIGHT SIDE: Subhead + AUTONOMOUS + GET STARTED */}
-        <div className="lg:col-span-5 flex flex-col items-start justify-center lg:pl-6">
+        <div className="lg:col-span-5 flex flex-col items-start justify-center lg:pl-6 mt-4 lg:mt-0">
           {/* Small Pink Subhead */}
-          <p className="text-[#ff409f] text-base sm:text-lg lg:text-xl font-medium leading-snug mb-3 sm:mb-4 drop-shadow-[0_0_12px_rgba(255,64,159,0.4)]">
+          <p className="text-[#ff409f] text-sm sm:text-lg lg:text-xl font-medium leading-snug mb-2 sm:mb-4 drop-shadow-[0_0_12px_rgba(255,64,159,0.4)]">
             Real-time generative intelligence
             <br />
             for zero-loss revenue
           </p>
 
           {/* AUTONOMOUS Big Display with Interactive Glow */}
-          <h2 className="text-4xl sm:text-6xl lg:text-[76px] font-[900] tracking-tight leading-[0.92] text-white uppercase select-none mb-6 sm:mb-8 transition-all duration-300 hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.4)] cursor-default">
+          <h2 className="text-3xl sm:text-6xl lg:text-[76px] font-[900] tracking-tight leading-[0.92] text-white uppercase select-none mb-5 sm:mb-8 transition-all duration-300 hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.4)] cursor-default break-words">
             AUTONOMOUS
           </h2>
 
           {/* Futuristic High-Converting CTA Button */}
-          <div className="flex flex-col items-start gap-3">
+          <div className="flex flex-col items-start gap-3 w-full sm:w-auto">
             <Link
               href="/app"
-              className="group relative inline-flex items-center justify-center p-[2px] rounded-full bg-gradient-to-r from-[#ff409f] via-purple-500 to-[#00f2fe] shadow-[0_0_30px_rgba(255,64,159,0.35)] hover:shadow-[0_0_55px_rgba(255,64,159,0.65)] transition-all duration-300 hover:scale-[1.04] active:scale-95 overflow-hidden"
+              className="group relative inline-flex items-center justify-center p-[2px] rounded-full bg-gradient-to-r from-[#ff409f] via-purple-500 to-[#00f2fe] shadow-[0_0_30px_rgba(255,64,159,0.35)] hover:shadow-[0_0_55px_rgba(255,64,159,0.65)] transition-all duration-300 hover:scale-[1.04] active:scale-95 overflow-hidden w-full sm:w-auto"
             >
               {/* Shimmer Sweep Animation */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out pointer-events-none" />
 
               {/* Inner Luminous Button Body */}
-              <div className="relative flex items-center justify-between gap-4 sm:gap-6 bg-white hover:bg-neutral-50 text-[#111114] px-8 sm:px-10 py-3.5 sm:py-4 rounded-full transition-colors duration-200">
+              <div className="relative flex items-center justify-between gap-4 sm:gap-6 bg-white hover:bg-neutral-50 text-[#111114] px-6 sm:px-10 py-3 sm:py-4 rounded-full transition-colors duration-200 w-full sm:w-auto">
                 <span className="font-[900] text-xs sm:text-sm tracking-[0.2em] uppercase select-none">
                   GET STARTED
                 </span>
@@ -172,7 +172,7 @@ export default function LandingPage() {
       </main>
 
       {/* 3D QUANTUM FOOTER SECTION */}
-      <footer className="relative z-10 w-full max-w-7xl mx-auto mt-8 sm:mt-12 pt-8 sm:pt-12 border-t border-white/[0.1] space-y-8 sm:space-y-10">
+      <footer className="relative z-10 w-full max-w-7xl mx-auto mt-6 sm:mt-12 pt-6 sm:pt-12 border-t border-white/[0.1] space-y-6 sm:space-y-10">
         
         {/* TOP ROW: Interactive Three.js 3D Reactor + Live Engine Matrix */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-stretch">

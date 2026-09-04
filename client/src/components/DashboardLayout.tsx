@@ -267,7 +267,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur-xl sm:px-6">
         <div className="flex min-w-0 items-center gap-3"><SidebarTrigger className="rr-icon-button md:hidden" />{isMobile ? null : <><span className="text-xs font-medium text-slate-400">Revenue Recovery</span><span className="text-xs text-slate-300">/</span></>}<span className="truncate text-sm font-semibold text-slate-800">{pageTitle}</span></div>
         <div className="flex items-center gap-2"><button onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))} className="rr-search-trigger hidden min-w-72 items-center gap-2 sm:flex"><span className="text-slate-400">Search customers, payments, invoices...</span><kbd>⌘ K</kbd></button><button className={`rr-icon-button relative ${hasUnreadManualSimulation ? "rr-notification-bell" : ""}`} onClick={() => { setNotificationsOpen(value => !value); setHasUnreadManualSimulation(false); }} aria-label={hasUnreadManualSimulation ? "New notification" : "Notifications"}><Bell className="h-4 w-4" />{hasUnreadManualSimulation ? <span className="rr-notification-dot absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white animate-ping" /> : null}</button></div>
-        {notificationsOpen ? <div className="rr-floating-surface absolute right-4 top-14 w-80 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xl space-y-2 z-50">
+        {notificationsOpen ? <div className="rr-floating-surface absolute right-3 sm:right-4 top-14 w-[calc(100vw-1.5rem)] max-w-xs sm:w-80 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xl space-y-2 z-50">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">
             <p className="text-xs font-bold text-slate-900">Live Recovery Alerts</p>
             <span className="text-[10px] font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full">Real-time</span>
@@ -302,7 +302,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           )}
         </div> : null}
       </header>
-      <main className="h-[calc(100vh-4rem)] overflow-y-auto p-4 sm:p-6 lg:p-8 flex flex-col">{children}</main>
+      <main className="h-[calc(100vh-4rem)] overflow-y-auto p-3.5 sm:p-6 lg:p-8 flex flex-col scroll-smooth">{children}</main>
     </SidebarInset>
   </>;
 }

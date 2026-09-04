@@ -9,6 +9,7 @@ When a customer's payment fails, ReVora's AI agent initiates a natural Hinglish 
 
 <br />
 
+[![Custom Domain](https://img.shields.io/badge/🌐%20Live%20Domain-revora.strynex.online-0f9488?style=for-the-badge&logo=googlechrome&logoColor=white)](https://revora.strynex.online)
 [![Live Demo](https://img.shields.io/badge/🚀%20Live%20Frontend-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://revora-razorpay-ai.vercel.app/)
 [![Backend](https://img.shields.io/badge/🔧%20Live%20Backend-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://revora-backend-8mp1.onrender.com/api/health)
 [![Powered by Razorpay](https://img.shields.io/badge/Powered%20by-Razorpay-0C2340?style=for-the-badge&logo=razorpay&logoColor=3395FF)](https://razorpay.com)
@@ -85,19 +86,20 @@ India loses **₹1,50,000 crore+** every year to failed digital transactions and
 ---
 
 ## 🏗️ Architecture & Deployment Flow
-
+ 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    VERCEL (Frontend Host)                   │
+│                    PRODUCTION FRONTEND                      │
 │  React 19 • TypeScript • Tailwind CSS v4 • Vite 7           │
-│  🔗 https://revora-razorpay-ai.vercel.app                  │
+│  🌐 Custom Domain: https://revora.strynex.online           │
+│  🚀 Vercel Domain: https://revora-razorpay-ai.vercel.app   │
 └──────────────────────┬──────────────────────────────────────┘
                        │ /api/* reverse proxy rewrites
                        ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                   RENDER (Backend API Service)              │
 │  Node.js 22 • Express • tRPC v11 • SSE Push Broadcaster     │
-│  🔗 https://revora-backend-8mp1.onrender.com                │
+│  🔧 https://revora-backend-8mp1.onrender.com                │
 │                                                             │
 │  ┌─────────────────┐ ┌───────────────────┐ ┌──────────────┐│
 │  │ Gemini 2.0      │ │ Policy & Scoring  │ │ SSE Emitter  ││
@@ -118,12 +120,13 @@ India loses **₹1,50,000 crore+** every year to failed digital transactions and
 
 | Service | Endpoint / Link | Status |
 |---|---|---|
-| 🌐 **Merchant Dashboard** | [revora-razorpay-ai.vercel.app](https://revora-razorpay-ai.vercel.app/) | ![Vercel](https://img.shields.io/badge/Vercel-Live-000000?style=flat-square&logo=vercel&logoColor=white) |
+| 🌐 **Live Website (Custom Domain)** | [revora.strynex.online](https://revora.strynex.online) | ![Custom Domain](https://img.shields.io/badge/Live-Online-0f9488?style=flat-square&logo=googlechrome&logoColor=white) |
+| 🚀 **Live Website (Vercel)** | [revora-razorpay-ai.vercel.app](https://revora-razorpay-ai.vercel.app/) | ![Vercel](https://img.shields.io/badge/Vercel-Live-000000?style=flat-square&logo=vercel&logoColor=white) |
 | 🔧 **Backend API** | [revora-backend-8mp1.onrender.com/api/health](https://revora-backend-8mp1.onrender.com/api/health) | ![Render](https://img.shields.io/badge/Render-Active-46E3B7?style=flat-square&logo=render&logoColor=white) |
 
 ### 🎬 Live Demo Walkthrough
 
-1. Open the **Merchant Dashboard** on your laptop: [revora-razorpay-ai.vercel.app](https://revora-razorpay-ai.vercel.app/)
+1. Open the **Merchant Dashboard** on your laptop: [revora.strynex.online](https://revora.strynex.online) or [revora-razorpay-ai.vercel.app](https://revora-razorpay-ai.vercel.app/)
 2. Navigate to **AI Agents** → Select any failed payment → Click **"Send Voice Recovery"**.
 3. Copy the recovery link and open it on your **mobile phone** (or a separate browser window).
 4. Tap **"Start Voice Recovery"** and speak in Hinglish:
@@ -259,7 +262,8 @@ Razorpay payment verified → Merchant dashboard notified via SSE
 
 <div align="center">
 
-[![Live Demo](https://img.shields.io/badge/Try%20Live%20Demo-🚀-0f9488?style=for-the-badge)](https://revora-razorpay-ai.vercel.app/)
+[![Try Live Demo (Custom Domain)](https://img.shields.io/badge/Try%20Live%20Demo-revora.strynex.online-0f9488?style=for-the-badge&logo=googlechrome&logoColor=white)](https://revora.strynex.online)
+[![Try Live Demo (Vercel)](https://img.shields.io/badge/Try%20Live%20Demo-Vercel%20Mirror-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://revora-razorpay-ai.vercel.app/)
 
 <br />
 

@@ -99,9 +99,22 @@
 
 @layer base {
   * { @apply border-border outline-ring/50; }
-  html { background: #f7f8fa; scroll-behavior: smooth; }
-  html, body { min-height: 100%; }
-  body { @apply bg-background text-foreground; font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif; overflow-y: scroll; -webkit-overflow-scrolling: touch; }
+  html {
+    background: #f7f8fa;
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html, body {
+    min-height: 100%;
+    overscroll-behavior-y: none;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
   h1, h2, h3, .rr-display { font-family: "Manrope", "DM Sans", ui-sans-serif, system-ui, sans-serif; }
   button:not(:disabled), [role="button"]:not([aria-disabled="true"]), [type="button"]:not(:disabled), [type="submit"]:not(:disabled), [type="reset"]:not(:disabled), a[href], select:not(:disabled), input[type="checkbox"]:not(:disabled), input[type="radio"]:not(:disabled) { @apply cursor-pointer; }
 }
