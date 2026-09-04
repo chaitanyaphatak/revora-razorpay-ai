@@ -80,16 +80,44 @@ export default function ManualExecutionSimulation() {
     simulation.mutate({ paymentId: input.paymentId, action, outcome, operatorNote: operatorNote.trim() || undefined });
   };
 
-  return <div className="rr-page mx-auto max-w-6xl space-y-5 pb-10">
-    <section className="rr-command-hero relative overflow-hidden px-6 py-7 sm:px-8">
+  return <div className="rr-page mx-auto max-w-6xl space-y-6 pb-12">
+    <section className="rr-command-hero relative overflow-hidden rounded-2xl border border-teal-100/70 bg-gradient-to-br from-white via-teal-50/20 to-emerald-50/30 p-6 shadow-xs sm:p-8">
       <div className="rr-command-signal" />
-      <div className="relative flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="rr-eyebrow text-teal-700">Operator simulation</p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-[-.05em] text-slate-950">Manually record a <span className="text-teal-600">simulated outcome.</span></h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Choose a source payment, an allowlisted recovery action, and a synthetic result. ReVora validates the fixed policy before recording any simulation evidence.</p>
+      <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="max-w-3xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-teal-200/80 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800 shadow-2xs">
+            <span className="h-2 w-2 rounded-full bg-teal-500 animate-pulse" />
+            <span>Manual Simulation Lab</span>
+            <span className="text-teal-400">/</span>
+            <span className="text-teal-700">Sandbox Safe</span>
+          </div>
+          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl sm:leading-tight">
+            Operator Console &amp;{" "}
+            <span className="bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600 bg-clip-text text-transparent">
+              Manual Recovery Simulation
+            </span>
+          </h1>
+          <p className="mt-2.5 text-sm leading-relaxed text-slate-600 sm:text-base">
+            Choose a source payment, an allowlisted recovery action, and a synthetic result. ReVora validates the fixed policy before recording any simulation evidence.
+          </p>
+          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200/80 bg-white/90 px-2.5 py-1 font-medium shadow-2xs">
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+              Zero Live Gateway Risk
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200/80 bg-white/90 px-2.5 py-1 font-medium shadow-2xs">
+              <CheckCircle2 className="h-3.5 w-3.5 text-teal-600" />
+              Policy Validated
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200/80 bg-white/90 px-2.5 py-1 font-medium shadow-2xs">
+              <PlayCircle className="h-3.5 w-3.5 text-indigo-600" />
+              Synthetic Audit Trace
+            </span>
+          </div>
         </div>
-        <Button asChild variant="outline" className="self-start rounded-lg border-slate-200 bg-white"><Link href="/simulator">Open What-If Lab</Link></Button>
+        <Button asChild variant="outline" className="self-start rounded-xl border-slate-200 bg-white shadow-sm lg:self-center">
+          <Link href="/simulator">Open What-If Lab</Link>
+        </Button>
       </div>
     </section>
 

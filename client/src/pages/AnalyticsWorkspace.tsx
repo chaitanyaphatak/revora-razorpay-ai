@@ -49,25 +49,52 @@ export default function AnalyticsWorkspace() {
   const topFailure = data.failureExposure[0];
   const totalPolicyEvents = data.policyDistribution.reduce((sum, item) => sum + item.count, 0);
 
-  return <div className="rr-page mx-auto max-w-[1540px] space-y-5 pb-10">
-    <section className="rr-analytics-hero relative overflow-hidden px-6 py-8 sm:px-8">
-      <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="rr-analytics-kicker">Revenue intelligence · source-backed</p>
-          <h1 className="rr-analytics-title">Analytics <em>Studio.</em></h1>
-          <p className="rr-analytics-lead">Interrogate risk-weighted exposure, recovery propensity, policy posture, and receivables health through traceable ReVora data.</p>
+  return <div className="rr-page mx-auto max-w-[1540px] space-y-6 pb-12">
+    <section className="rr-command-hero relative overflow-hidden rounded-2xl border border-teal-100/70 bg-gradient-to-br from-white via-teal-50/20 to-emerald-50/30 p-6 shadow-xs sm:p-8">
+      <div className="rr-command-signal" />
+      <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="max-w-3xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-teal-200/80 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800 shadow-2xs">
+            <span className="h-2 w-2 rounded-full bg-teal-500 animate-pulse" />
+            <span>Revenue Intelligence</span>
+            <span className="text-teal-400">/</span>
+            <span className="text-teal-700">Analytics Engine</span>
+          </div>
+          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl sm:leading-tight">
+            Deep Multi-Channel Telemetry &amp;{" "}
+            <span className="bg-gradient-to-r from-violet-600 via-indigo-600 to-teal-600 bg-clip-text text-transparent">
+              Recovery Yield Intelligence
+            </span>
+          </h1>
+          <p className="mt-2.5 text-sm leading-relaxed text-slate-600 sm:text-base">
+            Interrogate risk-weighted exposure, recovery propensity, policy posture, and receivables health through traceable ReVora data.
+          </p>
+          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200/80 bg-white/90 px-2.5 py-1 font-medium shadow-2xs">
+              <Target className="h-3.5 w-3.5 text-violet-600" />
+              Portfolio ERV Tracking
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200/80 bg-white/90 px-2.5 py-1 font-medium shadow-2xs">
+              <BarChart3 className="h-3.5 w-3.5 text-indigo-600" />
+              Propensity Mapping
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200/80 bg-white/90 px-2.5 py-1 font-medium shadow-2xs">
+              <Sparkles className="h-3.5 w-3.5 text-teal-600" />
+              Real-Time Traceability
+            </span>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="rr-analytics-range">
-            <span className="text-slate-500">Range</span>
-            <select value={range} onChange={event => setRange(event.target.value as "7D" | "30D" | "90D" | "12M")} aria-label="Analytics date range">
+        <div className="flex flex-wrap items-center gap-2 self-start lg:self-center">
+          <label className="flex h-9 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 shadow-sm">
+            <span className="text-slate-400">Range:</span>
+            <select value={range} onChange={event => setRange(event.target.value as "7D" | "30D" | "90D" | "12M")} aria-label="Analytics date range" className="bg-transparent font-bold text-teal-700 outline-none">
               <option>7D</option>
               <option>30D</option>
               <option>90D</option>
               <option>12M</option>
             </select>
           </label>
-          <Button variant="outline" className="h-9 rounded-lg border-slate-200 bg-white text-xs shadow-sm" disabled={isFetching} onClick={() => refetch()}>
+          <Button variant="outline" className="h-9 rounded-xl border-slate-200 bg-white text-xs shadow-sm" disabled={isFetching} onClick={() => refetch()}>
             <RefreshCw className={`mr-2 h-3.5 w-3.5 ${isFetching ? "rr-execution-spinner" : ""}`} />
             {isFetching ? "Refreshing…" : "Refresh analysis"}
           </Button>

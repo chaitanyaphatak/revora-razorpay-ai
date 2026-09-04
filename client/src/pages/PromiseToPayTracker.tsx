@@ -18,10 +18,41 @@ export default function PromiseToPayTracker() {
 
   return <div className="rr-page mx-auto max-w-7xl space-y-5 pb-10">
     <Link href="/invoices"><Button variant="ghost" className="-ml-3 rounded-lg text-slate-600 hover:bg-slate-100"><ArrowLeft className="mr-2 h-4 w-4" />Back to invoices</Button></Link>
-    <section className="rr-surface border-l-4 border-l-violet-500 p-6 sm:p-7">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div><p className="rr-eyebrow">Receivables commitments</p><h1 className="mt-2 text-3xl font-semibold tracking-[-.05em] text-slate-950">Promise-to-Pay tracker</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Track operator-recorded simulated payment commitments. Active commitments past their promised date are flagged as missed for human review.</p></div>
-        <select value={status} onChange={event => { setStatus(event.target.value); setPage(1); }} className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700"><option value="">All commitments</option><option value="active">Active</option><option value="missed">Missed</option><option value="kept">Kept</option><option value="cancelled">Cancelled</option></select>
+    <section className="rr-command-hero relative overflow-hidden rounded-2xl border border-teal-100/70 bg-gradient-to-br from-white via-teal-50/20 to-emerald-50/30 p-6 shadow-xs sm:p-8">
+      <div className="rr-command-signal" />
+      <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="max-w-3xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-teal-200/80 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800 shadow-2xs">
+            <span className="h-2 w-2 rounded-full bg-teal-500 animate-pulse" />
+            <span>Receivables Commitments</span>
+            <span className="text-teal-400">/</span>
+            <span className="text-teal-700">Promise Engine</span>
+          </div>
+          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl sm:leading-tight">
+            Track &amp; Manage{" "}
+            <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-teal-600 bg-clip-text text-transparent">
+              Promise-to-Pay Commitments
+            </span>
+          </h1>
+          <p className="mt-2.5 text-sm leading-relaxed text-slate-600 sm:text-base">
+            Track operator-recorded simulated payment commitments. Active commitments past their promised date are flagged as missed for human review.
+          </p>
+          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200/80 bg-white/90 px-2.5 py-1 font-medium shadow-2xs">
+              <CalendarClock className="h-3.5 w-3.5 text-indigo-600" />
+              Commitment Timeline
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200/80 bg-white/90 px-2.5 py-1 font-medium shadow-2xs">
+              <CheckCircle2 className="h-3.5 w-3.5 text-teal-600" />
+              Missed Promise Detection
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200/80 bg-white/90 px-2.5 py-1 font-medium shadow-2xs">
+              <Clock3 className="h-3.5 w-3.5 text-purple-600" />
+              Isolated Audit Trail
+            </span>
+          </div>
+        </div>
+        <select value={status} onChange={event => { setStatus(event.target.value); setPage(1); }} className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm self-start lg:self-center"><option value="">All commitments</option><option value="active">Active</option><option value="missed">Missed</option><option value="kept">Kept</option><option value="cancelled">Cancelled</option></select>
       </div>
     </section>
     {tracker.data?.setupRequired ? <SetupRequired message={tracker.data.message} /> : null}

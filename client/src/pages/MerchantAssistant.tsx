@@ -244,10 +244,15 @@ export default function MerchantAssistant() {
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h1 className="text-sm font-bold text-slate-900 truncate">ReVora Intelligence Assistant</h1>
+              <h1 className="text-sm sm:text-base font-extrabold text-slate-900 truncate">
+                Intelligence Assistant ·{" "}
+                <span className="bg-gradient-to-r from-purple-600 via-violet-600 to-pink-600 bg-clip-text text-transparent">
+                  Gemini 2.0 Core
+                </span>
+              </h1>
               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 border border-emerald-200/60">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Live Engine
+                Sub-Second Reasoning
               </span>
             </div>
             <p className="text-xs text-slate-500 truncate">

@@ -36,8 +36,49 @@ export default function ReceivablesDashboard() {
   const isDemoWorkspace = Boolean(dashboard.data?.recentInvoices.some(invoice => invoice.isSimulationDemo));
   const updateFilter = (callback: () => void) => { setPage(1); callback(); };
 
-  return <div className="rr-page mx-auto max-w-7xl space-y-5 pb-10">
-    <section className="overflow-hidden rounded-2xl border border-teal-100 bg-gradient-to-br from-white via-white to-teal-50 p-5 shadow-sm sm:p-7"><div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between"><div className="max-w-2xl"><div className="flex flex-wrap items-center gap-2"><p className="rr-eyebrow">B2B receivables recovery</p></div><h1 className="mt-2 text-3xl font-semibold tracking-[-.05em] text-slate-950 sm:text-4xl">Turn aged receivables into a <span className="text-teal-600">clear next review.</span></h1><p className="mt-3 text-sm leading-6 text-slate-600">Monitor invoice exposure, receive a deterministic recovery recommendation, and record bounded simulations with a complete audit trail. No message, payment, or source invoice change occurs here.</p></div><Link href="/invoices/promises"><Button className="rounded-xl bg-slate-900 px-4 text-white hover:bg-slate-800"><CalendarClock className="mr-2 h-4 w-4" />Promise-to-Pay tracker</Button></Link></div></section>
+  return <div className="rr-page mx-auto max-w-7xl space-y-6 pb-12">
+    <section className="rr-command-hero relative overflow-hidden rounded-2xl border border-teal-100/70 bg-gradient-to-br from-white via-teal-50/20 to-emerald-50/30 p-6 shadow-xs sm:p-8">
+      <div className="rr-command-signal" />
+      <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="max-w-3xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-teal-200/80 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800 shadow-2xs">
+            <span className="h-2 w-2 rounded-full bg-teal-500 animate-pulse" />
+            <span>B2B Receivables Engine</span>
+            <span className="text-teal-400">/</span>
+            <span className="text-teal-700">Smart Aging</span>
+          </div>
+          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl sm:leading-tight">
+            Enterprise Invoicing &amp;{" "}
+            <span className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
+              Promise-to-Pay Autopilot
+            </span>
+          </h1>
+          <p className="mt-2.5 text-sm leading-relaxed text-slate-600 sm:text-base">
+            Monitor invoice exposure, predict overdue risk, and execute deterministic recovery workflows with real-time settlement tracking.
+          </p>
+          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200/80 bg-white/90 px-2.5 py-1 font-medium shadow-2xs">
+              <CalendarClock className="h-3.5 w-3.5 text-teal-600" />
+              Promise-to-Pay Tracking
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200/80 bg-white/90 px-2.5 py-1 font-medium shadow-2xs">
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+              Automated Aging Review
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200/80 bg-white/90 px-2.5 py-1 font-medium shadow-2xs">
+              <ShieldCheck className="h-3.5 w-3.5 text-cyan-600" />
+              Zero Gateway Risk
+            </span>
+          </div>
+        </div>
+        <Link href="/invoices/promises">
+          <Button className="rounded-xl bg-slate-900 px-5 py-6 text-sm font-semibold text-white shadow-md hover:bg-slate-800">
+            <CalendarClock className="mr-2 h-4 w-4" />
+            Promise-to-Pay tracker
+          </Button>
+        </Link>
+      </div>
+    </section>
     {dashboard.isLoading ? <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">{Array.from({ length: 5 }, (_, index) => <Skeleton key={index} className="rr-skeleton h-32 rounded-2xl" />)}</div> : <div className="rr-stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-5"><MetricCard title="Total invoices" value={metric?.totalInvoices ?? 0} format={value => Math.round(value).toLocaleString("en-IN")} detail="Approved invoice source records" icon={FileText} tone="slate" /><MetricCard title="Outstanding" value={metric?.outstandingAmount ?? 0} format={money} detail="After simulated recoveries" icon={BadgeIndianRupee} tone="teal" /><MetricCard title="Overdue" value={metric?.overdueAmount ?? 0} format={money} detail={`${metric?.overdueCount ?? 0} invoices past due`} icon={CalendarClock} tone="amber" /><MetricCard title="At risk" value={metric?.atRiskAmount ?? 0} format={money} detail={`${metric?.atRiskCount ?? 0} high-risk or missed promises`} icon={AlertTriangle} tone="rose" /><MetricCard title="Recovered" value={metric?.recoveredAmount ?? 0} format={money} detail="Simulation outcomes included in revenue" icon={CheckCircle2} tone="violet" /></div>}
     {dashboard.data?.setupRequired ? <SetupRequired message={"message" in dashboard.data ? dashboard.data.message : undefined} /> : null}
     <section className="rr-surface overflow-hidden"><div className="flex flex-col gap-4 border-b border-slate-100 p-5 sm:p-6 lg:flex-row lg:items-end lg:justify-between"><div><p className="rr-eyebrow">Invoice explorer</p><h2 className="mt-1 text-xl font-semibold tracking-[-.04em] text-slate-950">Prioritise the receivables queue</h2><p className="mt-1 text-sm text-slate-500">Search and filter the approved B2B invoice source.</p></div><div className="grid gap-2 sm:grid-cols-2 lg:flex"><div className="relative sm:col-span-2"><Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" /><Input value={search} onChange={event => updateFilter(() => setSearch(event.target.value))} placeholder="Invoice, customer, reference" className="h-10 w-full rounded-lg border-slate-200 bg-slate-50 pl-9 text-sm lg:w-60" /></div><select value={status} onChange={event => updateFilter(() => setStatus(event.target.value))} className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700"><option value="">All statuses</option><option value="open">Open</option><option value="partially_paid">Partially paid</option><option value="disputed">Disputed</option><option value="paid">Paid</option></select><select value={risk} onChange={event => updateFilter(() => setRisk(event.target.value))} className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700"><option value="">All recovery risks</option><option value="high">High risk</option><option value="medium">Medium risk</option><option value="low">Low risk</option></select><label className="flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600"><input checked={overdueOnly} onChange={event => updateFilter(() => setOverdueOnly(event.target.checked))} type="checkbox" className="accent-teal-600" />Overdue only</label></div></div>

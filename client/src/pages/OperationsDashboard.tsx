@@ -177,29 +177,53 @@ export default function OperationsDashboard() {
   return (
     <div className="rr-page mx-auto max-w-[1540px] space-y-5 pb-10" aria-busy={isRangeRefreshing}>
       {/* Hero Command Bar */}
-      <section className="rr-command-hero relative overflow-hidden px-6 py-7 sm:px-8">
+      <section className="rr-command-hero relative overflow-hidden rounded-2xl border border-teal-100/70 bg-gradient-to-br from-white via-teal-50/20 to-emerald-50/30 p-6 shadow-xs sm:p-8">
         <div className="rr-command-signal" />
-        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="rr-eyebrow text-teal-700">Revenue intelligence</p>
-            <h1 className="mt-1 text-3xl font-semibold tracking-[-.055em] text-slate-950">Revenue Command Center</h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-600">
-              Monitor revenue risk, recovery performance, and policy-controlled AI actions across your business.
+        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-teal-200/80 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800 shadow-2xs">
+              <span className="h-2 w-2 rounded-full bg-teal-500 animate-pulse" />
+              <span>Revenue Operations Center</span>
+              <span className="text-teal-400">/</span>
+              <span className="text-teal-700">Live Autopilot</span>
+            </div>
+            <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl sm:leading-tight">
+              Real-Time Operations &amp;{" "}
+              <span className="bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-600 bg-clip-text text-transparent">
+                Autonomous Revenue Recovery
+              </span>
+            </h1>
+            <p className="mt-2.5 text-sm leading-relaxed text-slate-600 sm:text-base">
+              Monitor revenue risk, recovery performance, and policy-controlled AI actions across your business with real-time SSE telemetries.
             </p>
+            <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+              <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200/80 bg-white/90 px-2.5 py-1 font-medium shadow-2xs">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                Deterministic Guardrails
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200/80 bg-white/90 px-2.5 py-1 font-medium shadow-2xs">
+                <Sparkles className="h-3.5 w-3.5 text-teal-600" />
+                Hinglish Voice Recovery
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200/80 bg-white/90 px-2.5 py-1 font-medium shadow-2xs">
+                <CheckCircle2 className="h-3.5 w-3.5 text-cyan-600" />
+                Razorpay Verified Settlement
+              </span>
+            </div>
             {isRangeRefreshing ? (
-              <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-2.5 py-1 text-[11px] font-semibold text-teal-700">
+              <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-2.5 py-1 text-[11px] font-semibold text-teal-700">
                 <span className="rr-execution-spinner h-3 w-3 rounded-full border-2 border-teal-200 border-t-teal-600" />
                 Showing {displayedRange} while {range} source data updates
               </p>
             ) : error ? (
-              <p className="mt-2 text-[11px] font-semibold text-amber-700">
+              <p className="mt-3 text-[11px] font-semibold text-amber-700">
                 Showing the last settled range. Refresh to retry the selected range.
               </p>
             ) : null}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <label className="flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 shadow-sm">
+          <div className="flex flex-wrap items-center gap-2 self-start lg:self-center">
+            <label className="flex h-9 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 shadow-sm">
               <CalendarDays className="h-3.5 w-3.5 text-slate-400" />
               <select
                 aria-label="Date range"
@@ -216,7 +240,7 @@ export default function OperationsDashboard() {
 
             <Button
               variant="outline"
-              className="h-9 rounded-lg border-slate-200 bg-white text-xs shadow-sm"
+              className="h-9 rounded-xl border-slate-200 bg-white text-xs shadow-sm"
               onClick={() => {
                 const report = new Blob(
                   [`ReVora Revenue Operations\nSource range: ${displayedRange}\nRevenue at risk: ${data.metrics.revenueAtRisk}\nRecovered: ${data.metrics.recoveredRevenue}\n`],
@@ -234,7 +258,7 @@ export default function OperationsDashboard() {
               Export snapshot
             </Button>
 
-            <Button asChild className="h-9 rounded-lg bg-slate-900 px-3.5 text-xs text-white shadow-sm hover:bg-slate-800">
+            <Button asChild className="h-9 rounded-xl bg-slate-900 px-3.5 text-xs text-white shadow-sm hover:bg-slate-800">
               <Link href="/simulator">
                 <Play className="mr-2 h-3.5 w-3.5" />
                 Run recovery scan

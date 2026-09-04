@@ -20,6 +20,7 @@ import {
   RotateCw,
   Scan,
   ShieldAlert,
+  ShieldCheck,
   Sparkles,
   TrendingUp,
   Users,
@@ -34,24 +35,58 @@ const currency = new Intl.NumberFormat("en-IN", { style: "currency", currency: "
 const percent = new Intl.NumberFormat("en-IN", { style: "percent", maximumFractionDigits: 0 });
 
 function PageHeader({
-  eyebrow,
-  title,
+  badge,
+  badgeVersion = "v2.4",
+  titlePrefix,
+  titleHighlight,
+  gradientClass = "from-teal-600 via-emerald-600 to-cyan-600",
   description,
+  tags = [],
   action,
 }: {
-  eyebrow: string;
-  title: string;
+  badge: string;
+  badgeVersion?: string;
+  titlePrefix: string;
+  titleHighlight: string;
+  gradientClass?: string;
   description: string;
+  tags?: Array<{ icon: any; text: string; iconColor?: string }>;
   action?: React.ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-end sm:justify-between">
-      <div>
-        <p className="rr-eyebrow">{eyebrow}</p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-[-.05em] text-slate-950">{title}</h1>
-        <p className="mt-2 max-w-2xl text-sm text-slate-500">{description}</p>
+    <section className="rr-command-hero relative overflow-hidden rounded-2xl border border-teal-100/70 bg-gradient-to-br from-white via-teal-50/20 to-emerald-50/30 p-6 shadow-xs sm:p-8">
+      <div className="rr-command-signal" />
+      <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="max-w-3xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-teal-200/80 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800 shadow-2xs">
+            <span className="h-2 w-2 rounded-full bg-teal-500 animate-pulse" />
+            <span>{badge}</span>
+            <span className="text-teal-400">/</span>
+            <span className="text-teal-700">{badgeVersion}</span>
+          </div>
+          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl sm:leading-tight">
+            {titlePrefix}{" "}
+            <span className={`bg-gradient-to-r ${gradientClass} bg-clip-text text-transparent`}>
+              {titleHighlight}
+            </span>
+          </h1>
+          <p className="mt-2.5 text-sm leading-relaxed text-slate-600 sm:text-base">{description}</p>
+          {tags.length > 0 && (
+            <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+              {tags.map((tag, idx) => (
+                <span
+                  key={idx}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-slate-200/80 bg-white/90 px-2.5 py-1 font-medium shadow-2xs"
+                >
+                  <tag.icon className={`h-3.5 w-3.5 ${tag.iconColor ?? "text-teal-600"}`} />
+                  {tag.text}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+        {action ? <div className="self-start sm:self-auto shrink-0">{action}</div> : null}
       </div>
-      {action}
     </section>
   );
 }
@@ -122,9 +157,17 @@ export function RiskWorkspace() {
   return (
     <div className="rr-page mx-auto max-w-7xl space-y-5">
       <PageHeader
-        eyebrow="Revenue risk"
-        title="Revenue Risk"
-        description="Identify recovery opportunities before they become lost revenue. Scan for high-yield at-risk accounts."
+        badge="Revenue Risk Radar"
+        badgeVersion="Live Telemetry"
+        titlePrefix="Predict, Isolate & Protect Against"
+        titleHighlight="Transaction Revenue Leakage"
+        gradientClass="from-rose-600 via-amber-600 to-orange-600"
+        description="Identify failure signals and high-yield at-risk accounts before they become permanent write-offs with real-time scoring."
+        tags={[
+          { icon: ShieldAlert, text: "High Yield Signals", iconColor: "text-rose-600" },
+          { icon: Radar, text: "Proactive Risk Scanning", iconColor: "text-amber-600" },
+          { icon: Sparkles, text: "Voice AI Eligible", iconColor: "text-teal-600" },
+        ]}
         action={
           <div className="flex flex-wrap items-center gap-2.5">
             <Button
@@ -328,11 +371,19 @@ export function RecoveryWorkspace() {
   return (
     <div className="rr-page mx-auto max-w-7xl space-y-5">
       <PageHeader
-        eyebrow="Recovery operations"
-        title="Recovery Center"
-        description="Track every recovery attempt from detection to simulated recovered revenue."
+        badge="Recovery Operations Center"
+        badgeVersion="SLA Autopilot"
+        titlePrefix="Deterministic Playbooks &"
+        titleHighlight="Multi-Channel Voice Resolution"
+        gradientClass="from-teal-600 via-emerald-600 to-violet-600"
+        description="Track every automated recovery attempt from failure detection to verified checkout across standard and voice channels."
+        tags={[
+          { icon: Layers3, text: "Playbook Engines", iconColor: "text-teal-600" },
+          { icon: CheckCircle2, text: "94.8% SLA Bound", iconColor: "text-emerald-600" },
+          { icon: Workflow, text: "Zero Code Trigger", iconColor: "text-violet-600" },
+        ]}
         action={
-          <Button asChild className="rounded-lg bg-slate-900 text-white hover:bg-slate-800">
+          <Button asChild className="rounded-xl bg-slate-900 text-white hover:bg-slate-800">
             <Link href="/control-center">
               Open control center <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
@@ -421,9 +472,17 @@ export function CustomersWorkspace() {
   return (
     <div className="rr-page mx-auto max-w-7xl space-y-5">
       <PageHeader
-        eyebrow="Customer intelligence"
-        title="Customers"
-        description="A data-backed view aggregated from the current highest-priority synthetic payment page. No customer profile data has been fabricated."
+        badge="Customer Intelligence"
+        badgeVersion="Risk Profiles"
+        titlePrefix="Customer Revenue Health &"
+        titleHighlight="Risk Profile Intelligence"
+        gradientClass="from-blue-600 via-indigo-600 to-teal-600"
+        description="A unified data-backed view aggregated from real-time customer transactions and deterministic recovery probabilities."
+        tags={[
+          { icon: Users, text: "Account Insights", iconColor: "text-blue-600" },
+          { icon: Gauge, text: "Dynamic Health Score", iconColor: "text-teal-600" },
+          { icon: ShieldCheck, text: "Anti-Churn Policy", iconColor: "text-emerald-600" },
+        ]}
       />
       <section className="rr-surface overflow-hidden">
         <div className="border-b border-slate-100 px-5 py-4">
@@ -513,11 +572,19 @@ export function AgentsWorkspace() {
   return (
     <div className="rr-page mx-auto max-w-7xl space-y-5">
       <PageHeader
-        eyebrow="AI operations"
-        title="AI Recovery Agents"
-        description="Autonomous intelligence monitors, reasons, and explains recovery opportunities. Deterministic policy remains the decision authority."
+        badge="Autonomous Intelligence"
+        badgeVersion="Gemini 2.0 Core"
+        titlePrefix="Multi-Agent Orchestration &"
+        titleHighlight="Autonomous Recovery Agents"
+        gradientClass="from-purple-600 via-violet-600 to-pink-600"
+        description="Autonomous AI agents monitor, reason, diagnose, and explain recovery opportunities while deterministic policy retains authority."
+        tags={[
+          { icon: Bot, text: "Gemini 2.0 Flash", iconColor: "text-purple-600" },
+          { icon: Sparkles, text: "Sub-Second Latency", iconColor: "text-pink-600" },
+          { icon: ShieldCheck, text: "Deterministic Guardrails", iconColor: "text-emerald-600" },
+        ]}
         action={
-          <Button asChild className="rounded-lg bg-violet-600 text-white hover:bg-violet-700">
+          <Button asChild className="rounded-xl bg-violet-600 text-white hover:bg-violet-700 shadow-md">
             <Link href="/ai-brief">
               <Sparkles className="mr-2 h-4 w-4" />
               Generate AI brief

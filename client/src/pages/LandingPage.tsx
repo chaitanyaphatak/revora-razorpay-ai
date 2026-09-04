@@ -16,7 +16,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen w-full bg-black flex flex-col justify-between p-3.5 sm:p-8 lg:px-16 lg:py-10 font-sans selection:bg-[#ff409f] selection:text-white relative overflow-x-hidden scroll-smooth">
-      {/* Background Video — Local Asset, GPU Accelerated, Instant Load */}
+      {/* Background Video — Local Asset, GPU Accelerated, Instant Load with WebP Poster */}
       <video
         className="fixed inset-0 w-full h-full object-cover pointer-events-none z-0 transform-gpu will-change-transform opacity-80"
         autoPlay
@@ -24,6 +24,7 @@ export default function LandingPage() {
         muted
         playsInline
         preload="auto"
+        poster="/assets/hero-bg-poster.webp"
         src="/assets/hero-bg.mp4"
       />
 
