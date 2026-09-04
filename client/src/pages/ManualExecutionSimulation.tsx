@@ -103,7 +103,7 @@ export default function ManualExecutionSimulation() {
           <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-slate-600">
             <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200/80 bg-white/90 px-2.5 py-1 font-medium shadow-2xs">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-              Zero Live Gateway Risk
+              Simulation only — no external execution
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200/80 bg-white/90 px-2.5 py-1 font-medium shadow-2xs">
               <CheckCircle2 className="h-3.5 w-3.5 text-teal-600" />

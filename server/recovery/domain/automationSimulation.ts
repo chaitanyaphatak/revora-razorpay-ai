@@ -46,7 +46,27 @@ export function simulateAutomationRecovery(payment: NormalizedPayment, action: R
   const simulation = simulateRecovery(payment, action);
   const actionLabel = humanizeAutomationAction(action);
 
-  // In demo simulation mode, ensure active recovery actions (retry, reminder, alternate payment) succeed and recover revenue
+  // If policy blocks the action (e.g. attempt count exceeded or policy gate), respect the blocked status
+  if (simulation.policy.result === "blocked") {
+    simulation.executionStatus = "blocked";
+    simulation.amountRecovered = 0;
+    simulation.message = `Simulated ${actionLabel.toLowerCase()} blocked by policy: ${simulation.policy.reason}. No real payment was processed.`;
+    return {
+      simulation,
+      executedAction: simulation.action,
+      simulatedDurationSeconds: durationFor(simulation),
+      resultState: resultStateFor(simulation),
+      progressSteps: [
+        "Payment failure detected",
+        "Analyzing recovery conditions",
+        `Policy gate evaluated: ${simulation.policy.ruleCode}`,
+        "Action blocked under safety policy — no provider is contacted",
+        "Recording synthetic policy and audit evidence",
+      ],
+    };
+  }
+
+  // In demo simulation mode, ensure active recovery actions succeed and recover revenue
   if (action === "retry_payment" || action === "send_recovery_reminder" || action === "suggest_alternate_payment") {
     simulation.executionStatus = "success";
     simulation.amountRecovered = payment.amount > 0 ? payment.amount : 2999;
@@ -57,7 +77,7 @@ export function simulateAutomationRecovery(payment: NormalizedPayment, action: R
       reason: "Recovery is approved under the deterministic policy boundary and threshold.",
       policyVersion: "recoverai-v1",
     };
-    simulation.message = `Simulated ${actionLabel.toLowerCase()} succeeded. Full payment amount recovered in simulated sandbox.`;
+    simulation.message = `Simulated ${actionLabel.toLowerCase()} succeeded. Full payment amount recovered in simulated sandbox. No real payment was processed.`;
   }
 
   return {
@@ -99,7 +119,7 @@ export function simulateOverdueInvoiceAutomation(invoice: InvoiceRiskInput, acti
       reason: "Receivables follow-up meets the deterministic recovery threshold.",
       policyVersion: "recoverai-invoice-v1",
     };
-    simulation.message = `Simulated ${actionLabel.toLowerCase()} succeeded. Full outstanding invoice balance recovered in simulated sandbox.`;
+    simulation.message = `Simulated ${actionLabel.toLowerCase()} succeeded. Full outstanding invoice balance recovered in simulated sandbox. No real message or payment was processed.`;
   }
 
   return {

@@ -356,7 +356,7 @@ export default function MerchantAssistant() {
                 )}
 
                 <div
-                  className={`group relative max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-xs transition-all ${
+                  className={`group relative rr-chat-bubble max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-xs transition-all ${
                     message.role === "user"
                       ? "rounded-tr-xs bg-slate-900 text-white font-medium shadow-slate-900/10"
                       : "rounded-tl-xs border border-slate-200/80 bg-white text-slate-800 shadow-slate-200/50"
