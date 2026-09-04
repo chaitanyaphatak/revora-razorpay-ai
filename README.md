@@ -3,12 +3,14 @@
 # ⚡ ReVora — Revenue Operations & AI Recovery
 
 ### 🏆 Built for Razorpay AI Hackathon 2026
+**Created by [Chaitanya Phatak](https://github.com/chaitanyaphatak)**
 
 **India's first Hinglish Voice AI agent that recovers failed payments in real-time.**  
 When a customer's payment fails, ReVora's AI agent initiates a natural Hinglish conversation, addresses doubts, negotiates alternatives, and recovers revenue automatically.
 
 <br />
 
+[![Created by Chaitanya Phatak](https://img.shields.io/badge/Created%20by-Chaitanya%20Phatak-4f46e5?style=for-the-badge&logo=github&logoColor=white)](https://github.com/chaitanyaphatak)
 [![Custom Domain](https://img.shields.io/badge/🌐%20Live%20Domain-revora.strynex.online-0f9488?style=for-the-badge&logo=googlechrome&logoColor=white)](https://revora.strynex.online)
 [![Live Demo](https://img.shields.io/badge/🚀%20Live%20Frontend-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://revora-razorpay-ai.vercel.app/)
 [![Backend](https://img.shields.io/badge/🔧%20Live%20Backend-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://revora-backend-8mp1.onrender.com/api/health)
@@ -55,6 +57,20 @@ India loses **₹1,50,000 crore+** every year to failed digital transactions and
 | ❌ Manual support escalation | ✅ 24/7 automated intelligent resolution |
 | ❌ 5–15% average recovery rate | ✅ 60–85% target recovery rate |
 | ❌ Hours/days delay | ✅ Sub-2-minute complete payment recovery |
+
+---
+
+## 🎯 Project Objectives & ReVora Sahayak
+
+Every failed payment is lost revenue. ReVora's primary mission is to autonomously convert dropped Razorpay checkouts into completed orders before the customer abandons the purchase.
+
+Powered by **ReVora Sahayak**—our conversational AI assistant—the platform reaches out in real-time, addresses hesitations, and provides instant 1-click checkout recovery.
+
+### 🌟 Core Objectives:
+1. **Zero-Lag Autonomous Recovery:** Detect Razorpay failure webhooks and trigger personalized outreach within 90 seconds, capturing customers while their purchase intent is peaked.
+2. **Context-Aware Intelligence (ReVora Sahayak):** Automatically diagnose failure reasons (bank server downtime, UPI limits, network timeouts) and explain them in clear, friendly language with the best alternate payment routes.
+3. **Eliminating Churn & Preserving Trust:** Turn a frustrating checkout error screen into an empathetic, interactive support experience that protects brand loyalty.
+4. **End-to-End Merchant Visibility:** Provide business owners with a live operations dashboard tracking recovered GMV, recovery conversion rates %, and drop-off analytics via real-time SSE streams.
 
 ---
 
@@ -260,6 +276,15 @@ Razorpay payment verified → Merchant dashboard notified via SSE
 
 ---
 
+## 👨‍💻 Author & Maintainer
+
+**Chaitanya Phatak**  
+- **GitHub:** [@chaitanyaphatak](https://github.com/chaitanyaphatak)  
+- **Project:** [ReVora on GitHub](https://github.com/chaitanyaphatak/revora-razorpay-ai)  
+- **Domain:** [revora.strynex.online](https://revora.strynex.online)  
+
+---
+
 <div align="center">
 
 [![Try Live Demo (Custom Domain)](https://img.shields.io/badge/Try%20Live%20Demo-revora.strynex.online-0f9488?style=for-the-badge&logo=googlechrome&logoColor=white)](https://revora.strynex.online)
@@ -267,7 +292,7 @@ Razorpay payment verified → Merchant dashboard notified via SSE
 
 <br />
 
-**Built with pride for Razorpay AI Hackathon 2026 🇮🇳**
+**Created with ❤️ by Chaitanya Phatak for Razorpay AI Hackathon 2026 🇮🇳**
 
 [![Powered by Razorpay](https://img.shields.io/badge/Razorpay-0C2340?style=flat-square&logo=razorpay&logoColor=3395FF)](https://razorpay.com)
 [![Google Gemini](https://img.shields.io/badge/Google%20Gemini-8E75B2?style=flat-square&logo=googlegemini&logoColor=white)](https://deepmind.google/technologies/gemini)
